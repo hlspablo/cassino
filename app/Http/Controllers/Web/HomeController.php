@@ -9,6 +9,7 @@ use App\Models\GameExclusive;
 use App\Models\GamesKscinus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -26,11 +27,19 @@ class HomeController extends Controller
                             ->orderBy('views', 'desc')
                             ->get();
 
+        $setting = \Helper::getSetting();
+
+        Log::info('Home page visited', [
+            'settings' => $setting,
+        ]);
+
         return view('web.home.index', [
             'gamesPopulars' => $gamesPopulars,
             'games' => $games,
             'gamesExclusives' => $gamesExclusives,
             'gamesPragmatic' => $gamesPragmatic,
+            'title' => $setting->software_name,
+            'description' => $setting->software_description,
         ]);
     }
 
