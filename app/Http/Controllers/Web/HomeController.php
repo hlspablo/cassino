@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\BetCategory;
-use App\Models\BetEvent;
-use App\Models\BetSection;
 use App\Models\Category;
 use App\Models\Game;
 use App\Models\GameExclusive;
@@ -25,26 +22,15 @@ class HomeController extends Controller
         $gamesExclusives    = GameExclusive::whereActive(1)
                             ->orderBy('views', 'desc')
                             ->get();
-		$gamesPragmatic    = GamesKscinus::whereStatus(1)
+        $gamesPragmatic    = GamesKscinus::whereStatus(1)
                             ->orderBy('views', 'desc')
                             ->get();
-
-        $events = BetEvent::where('bet_category_id', 1)
-            ->whereDate('event_day', '>=', Carbon::today())
-            ->orderBy('event_day', 'desc')
-            ->orderByRaw('CASE
-                WHEN DATE(event_day) = ? THEN 0
-                ELSE 1
-                END', [Carbon::today()->toDateString()])
-            ->take(8)
-            ->get();
 
         return view('web.home.index', [
             'gamesPopulars' => $gamesPopulars,
             'games' => $games,
             'gamesExclusives' => $gamesExclusives,
-			'gamesPragmatic' => $gamesPragmatic,
-            'events' => $events
+            'gamesPragmatic' => $gamesPragmatic,
         ]);
     }
 

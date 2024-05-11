@@ -14,8 +14,6 @@ class SuitPayController extends Controller
 {
     use SuitpayTrait;
 
-
-
     /**
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse|void

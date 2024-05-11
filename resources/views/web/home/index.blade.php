@@ -59,59 +59,6 @@
                     </div>
                 </section>
 
-                @if(count($events))
-                    <div class="mt-2">
-                        @include('includes.title', ['link' => route('web.bets.index'), 'title' => 'Esportes', 'icon' => 'fa-solid fa-futbol'])
-                    </div>
-
-                    <div class="row mt-2">
-                        <div class="col-lg-4 mb-3">
-                            <a href=""><img src="{{ asset('assets/images/aposta_relampago.jpg') }}" alt="" class="img-fluid rounded-4 w-full"></a>
-                        </div>
-                        <div class="col-lg-4 mb-3">
-                            <a href=""><img src="{{ asset('assets/images/sistema_unico.jpg') }}" alt="" class="img-fluid rounded-4 w-full"></a>
-                        </div>
-                        <div class="col-lg-4 mb-3">
-                            <a href=""><img src="{{ asset('assets/images/aposte_no_seu_time.jpg') }}" alt="" class="img-fluid rounded-4 w-full"></a>
-                        </div>
-                    </div>
-
-                    <section id="splide-soccer" class=" splide">
-                        <div class="splide__track">
-                            <ul class="splide__list">
-                                @foreach($events as $matche)
-                                    @php
-                                        $createdAt = \Carbon\Carbon::parse($matche->event_day);
-                                        $dataFormatada = $createdAt->format('d/m');
-                                        $nomeDiaSemana = $createdAt->translatedFormat('l');
-                                        $horaFormatada = $createdAt->format('H:i');
-                                    @endphp
-
-                                    <li class="splide__slide">
-                                        <div class="splide-box">
-                                            @include('includes.futbol-card', [
-                                               'title' => $matche->name,
-                                               'reward' => $matche->betsAmounts > 0 ?  \Helper::amountFormatDecimal($matche->betsAmountsWithPercent) : 'Calculando...',
-                                               'cover' => $matche->cover,
-                                               'result_team_a' => $matche->event_result_a,
-                                               'logo_team_a' => asset('storage/'.$matche->event_a_logo),
-                                               'title_team_a' => $matche->event_a,
-                                               'result_team_b' => $matche->event_result_b,
-                                               'logo_team_b' => asset('storage/'.$matche->event_b_logo),
-                                               'title_team_b' => $matche->event_b,
-                                               'url' => url('/bets/'. base64_encode($matche->id)),
-                                               'date' => $dataFormatada.' &#x2022; '.$nomeDiaSemana.' &#x2022; '.$horaFormatada,
-                                               'istoday' => \Carbon\Carbon::parse($matche->event_day)->isToday(),
-                                                'category' => $matche->betCategory->name
-                                           ])
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </section>
-                @endif
-
                 @if(count($gamesExclusives) > 0)
                     <div class="mt-5">
                         @include('includes.title', ['link' => url('/games?tab=exclusives'), 'title' => 'Jogos da Casa', 'icon' => 'fa-regular fa-gamepad-modern'])
