@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Gateway;
 
 use App\Http\Controllers\Controller;
 use App\Models\SuitPayPayment;
+use App\Models\Transaction;
 use App\Models\Withdrawal;
 use App\Traits\Gateways\SuitpayTrait;
 use Filament\Notifications\Notification;
@@ -14,17 +15,6 @@ class SuitPayController extends Controller
     use SuitpayTrait;
 
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function callbackMethodPayment(Request $request)
-    {
-        $data = $request->all();
-        \DB::table('debug')->insert(['text' => json_encode($request->all())]);
-
-        return response()->json([], 200);
-    }
 
     /**
      * @param Request $request
@@ -33,7 +23,25 @@ class SuitPayController extends Controller
     public function callbackMethod(Request $request)
     {
         $data = $request->all();
-        //\DB::table('debug')->insert(['text' => json_encode($request->all())]);
+        $realIp = $request->ip();
+
+        //TODO: enable for production
+
+        // $allowedIps = ['162.243.162.250', '192.34.62.86',
+        //     '137.184.60.127','159.223.100.252',
+        //     '157.245.93.131', '208.68.39.149'];
+        //
+        // if(!in_array($realIp, $allowedIps)) {
+        //     return response()->json([], 403);
+        // }
+
+        $sec_token = $request->query('sec_token');
+
+        $transaction = Transaction::where('payment_id', $data['idTransaction'])->first();
+
+        if(empty($transaction) || $transaction->sec_token != $sec_token) {
+            return response()->json([], 404);
+        }
 
         if(isset($data['idTransaction']) && $data['typeTransaction'] == 'PIX') {
             if($data['statusTransaction'] == "PAID_OUT" || $data['statusTransaction'] == "PAYMENT_ACCEPT") {
@@ -104,7 +112,7 @@ class SuitPayController extends Controller
                         ->send();
 
                     return back();
-                }else{
+                } else {
                     Notification::make()
                         ->title('Erro no saque')
                         ->body('Erro ao solicitar o saque')

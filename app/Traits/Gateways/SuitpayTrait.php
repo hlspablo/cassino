@@ -12,6 +12,7 @@ use App\Notifications\NewDepositNotification;
 use App\Notifications\NewWithdrawalNotification;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
+use Illuminate\Support\Str;
 use http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -62,6 +63,11 @@ trait SuitpayTrait
 
         self::generateCredentials();
 
+
+        $sec_token = Str::random(40);
+        $test_callback = 'https://8070-167-250-139-77.ngrok-free.app/suitpay/callback?sec_token='.$sec_token;
+        $callback_prod = url('/suitpay/callback?sec_token='.$sec_token);
+
         $response = Http::withHeaders([
             'ci' => self::$clienteId,
             'cs' => self::$clienteSecret
@@ -71,10 +77,10 @@ trait SuitpayTrait
             "amount" => \Helper::amountPrepare($request->amount),
             "shippingAmount" => 0.0,
             "usernameCheckout" => "checkout",
-            "callbackUrl" => url('/suitpay/callback'),
+            "callbackUrl" => $test_callback,
             "client" => [
                 "name" => auth()->user()->name,
-                "document" =>\Helper::soNumero($request->cpf),
+                "document" => \Helper::soNumero($request->cpf),
                 "phoneNumber" => \Helper::soNumero(auth()->user()->phone),
                 "email" => auth()->user()->email
             ]
@@ -83,8 +89,8 @@ trait SuitpayTrait
         if($response->successful()) {
             $responseData = $response->json();
 
-            self::generateTransaction($responseData['idTransaction'], \Helper::amountPrepare($request->amount)); /// gerando historico
-            self::generateDeposit($responseData['idTransaction'], \Helper::amountPrepare($request->amount)); /// gerando deposito
+            self::generateTransaction($responseData['idTransaction'], \Helper::amountPrepare($request->amount), $sec_token);
+            self::generateDeposit($responseData['idTransaction'], \Helper::amountPrepare($request->amount));
 
             return [
                 'status' => true,
@@ -107,27 +113,13 @@ trait SuitpayTrait
      */
     public static function consultStatusTransaction($request)
     {
-        self::generateCredentials();
 
-        $response = Http::withHeaders([
-            'ci' => self::$clienteId,
-            'cs' => self::$clienteSecret
-        ])->post(self::$uri.'gateway/consult-status-transaction', [
-            "typeTransaction" => "PIX",
-            "idTransaction" => $request->idTransaction,
-        ]);
-        if($response->successful()) {
-            $responseData = $response->json();
+        $transaction = Transaction::where('payment_id', $request->idTransaction)->first();
 
-            if($responseData == "PAID_OUT" || $responseData == "PAYMENT_ACCEPT") {
-                if(self::finalizePayment($request->idTransaction)) {
-                    return response()->json(['status' => 'PAID']);
-                }
-
-                return response()->json(['status' => $responseData], 400);
-            }
-
-            return response()->json(['status' => $responseData], 400);
+        if($transaction->status > 0) {
+            return response()->json(['status' => 'PAID']);
+        } else {
+            return response()->json(['status' => 'WAITING_PAYMENT'], 400);
         }
     }
 
@@ -135,7 +127,7 @@ trait SuitpayTrait
      * @param $idTransaction
      * @return bool
      */
-    public static function finalizePayment($idTransaction) : bool
+    public static function finalizePayment($idTransaction): bool
     {
         $transaction = Transaction::where('payment_id', $idTransaction)->where('status', 0)->first();
         $setting = \Helper::getSetting();
@@ -162,14 +154,7 @@ trait SuitpayTrait
                 }
 
                 if($wallet->increment('balance', $transaction->price)) {
-//                    $setting = \Helper::getSetting();
-//
-//                    if($setting->initial_bonus > 0) {
-//
-//                        /// multiplicação de bonus
-//                        $bonus = \Helper::porcentagem_xn($setting->initial_bonus, $transaction->price);
-//                        $wallet->update(['balance_bonus' => $bonus]);
-//                    }
+
 
                     if($transaction->update(['status' => 1])) {
                         $deposit = Deposit::where('payment_id', $idTransaction)->where('status', 0)->lockForUpdate()->first();
@@ -217,7 +202,8 @@ trait SuitpayTrait
                             if($deposit->update(['status' => 1])) {
                                 $admins = User::where('role_id', 0)->get();
                                 foreach ($admins as $admin) {
-                                    $admin->notify(new NewDepositNotification($user->name, $transaction->price));
+                                    // TODO: Enable on for SMTP
+                                    //$admin->notify(new NewDepositNotification($user->name, $transaction->price));
                                 }
 
                                 return true;
@@ -256,7 +242,7 @@ trait SuitpayTrait
      * @param $amount
      * @return void
      */
-    private static function generateTransaction($idTransaction, $amount)
+    private static function generateTransaction($idTransaction, $amount, $sec_token)
     {
         $setting = \Helper::getSetting();
 
@@ -266,7 +252,8 @@ trait SuitpayTrait
             'payment_method' => 'pix',
             'price' => $amount,
             'currency' => $setting->currency_code,
-            'status' => 0
+            'status' => 0,
+            'sec_token' => $sec_token
         ]);
     }
 

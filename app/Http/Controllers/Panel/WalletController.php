@@ -56,14 +56,6 @@ class WalletController extends Controller
         return back()->with('success', 'Visibilidade alterada com sucesso');
     }
 
-    /**
-     * @param Request $request
-     * @return void
-     */
-    public function generateDeposit(Request $request)
-    {
-        dd($request->all());
-    }
 
     /**
      * @param Request $request
@@ -74,7 +66,7 @@ class WalletController extends Controller
         $totalDeposits = \App\Models\Deposit::where('user_id', auth()->id())->sum('amount');
         $totalRollover = \App\Models\Order::where('user_id', auth()->id())->sum('amount');
         $checkRollover = $totalRollover > $totalDeposits;
-        
+
         $setting = \Helper::getSetting();
         $rules = [
             'amount' => [
@@ -94,15 +86,6 @@ class WalletController extends Controller
             'accept_terms' => 'required',
         ];
 
-        // $setting = \Helper::getSetting();
-        // $rules = [
-        //     'amount' => ['required', 'numeric', 'min:'.$setting->min_withdrawal, 'max:'.$setting->max_withdrawal],
-        //     'chave_pix' => 'required',
-        //     'tipo_chave' => 'required',
-        //     'accept_terms' => 'required',
-        // ];
-
-                
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {

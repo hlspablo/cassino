@@ -27,6 +27,7 @@ class Transaction extends Model
         'payment_method',
         'price',
         'currency',
-        'status'
+        'status',
+        'sec_token'
     ];
 }
