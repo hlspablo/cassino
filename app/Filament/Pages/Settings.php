@@ -62,13 +62,12 @@ class Settings extends Page implements HasForms
                             ->label('Descrição')
                             ->maxLength(191),
                         FileUpload::make('software_logo_white')
-                            ->label('Logo Branca')
-                            ->placeholder('Carregue uma logo branca')
+                            ->label('Logo')
+                            ->placeholder('Carregue a logo do seu cassino')
+                            ->directory('logos')
+                            ->disk('public')
                             ->image(),
-                        FileUpload::make('software_logo_black')
-                            ->label('Logo Escura')
-                            ->placeholder('Carregue uma logo escura')
-                            ->image(),
+
                     ])->columns(2),
                 Section::make('Depositos e Saques')
                     ->schema([
@@ -213,9 +212,18 @@ class Settings extends Page implements HasForms
             $setting = Setting::first();
             if(!empty($setting)) {
 
-                /// Upload
-                //unset($this->data['software_logo_white']);
-                //unset($this->data['software_logo_black']);
+
+
+
+                if (isset($this->data['software_logo_white']) && $this->data['software_logo_white']) {
+                    // Accessing the TemporaryUploadedFile directly
+                    foreach ($this->data['software_logo_white'] as $uploadedFile) {
+                        $storedPath = $uploadedFile->store('logos', 'public');
+                        $setting->software_logo_white = $storedPath;
+                        break; // Assuming only one file is uploaded under this key, exit the loop
+                    }
+                }
+
 
 
                 if(!empty($this->data['software_smtp_type'])) {
@@ -235,7 +243,9 @@ class Settings extends Page implements HasForms
                     $envs->save();
                 }
 
-                if($setting->update($this->data)) {
+                $dataToUpdate = collect($this->data)->except(['software_logo_white'])->toArray();
+
+                if($setting->update($dataToUpdate)) {
                     Cache::put('setting', $setting);
 
                     Notification::make()

@@ -29,10 +29,6 @@ class HomeController extends Controller
 
         $setting = \Helper::getSetting();
 
-        Log::info('Home page visited', [
-            'settings' => $setting,
-        ]);
-
         return view('web.home.index', [
             'gamesPopulars' => $gamesPopulars,
             'games' => $games,
