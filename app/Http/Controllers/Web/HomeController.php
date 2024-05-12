@@ -35,7 +35,10 @@ class HomeController extends Controller
             'gamesExclusives' => $gamesExclusives,
             'gamesPragmatic' => $gamesPragmatic,
             'title' => $setting->software_name,
+            'logo_url' => $setting->software_logo_white,
             'description' => $setting->software_description,
+            'instagram' => ltrim($setting->instagram, '@'),
+            'whatsapp' => $setting->whatsapp,
         ]);
     }
 

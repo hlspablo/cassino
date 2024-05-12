@@ -15,6 +15,7 @@ use Filament\Support\Exceptions\Halt;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Cache;
 use Jackiedo\DotenvEditor\Facades\DotenvEditor;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class Settings extends Page implements HasForms
 {
@@ -69,14 +70,14 @@ class Settings extends Page implements HasForms
                             ->image(),
 
                     ])->columns(2),
-                Section::make('Depositos e Saques')
+                Section::make('Depósitos e Saques')
                     ->schema([
                         TextInput::make('min_deposit')
-                            ->label('Min Deposito')
+                            ->label('Min Depósito')
                             ->numeric()
                             ->maxLength(191),
                         TextInput::make('max_deposit')
-                            ->label('Max Deposito')
+                            ->label('Max Depósito')
                             ->numeric()
                             ->maxLength(191),
                         TextInput::make('min_withdrawal')
@@ -107,6 +108,19 @@ class Settings extends Page implements HasForms
                             ->suffix('%')
                             ->maxLength(191),
                     ])->columns(3),
+
+                Section::make('Social')
+                    ->description('Redes Sociais')
+                    ->schema([
+                        TextInput::make('instagram')
+                            ->label('Instagram')
+                            ->placeholder('Digite o seu @fulano')
+                            ->maxLength(191),
+                    TextInput::make('whatsapp')
+                            ->label('Whatsapp')
+                            ->placeholder('Digite o número de Whatsapp')
+                            ->maxLength(191),
+                    ])->columns(2),
                 Section::make('Dados Gerais')
                     ->schema([
                         TextInput::make('initial_bonus')
@@ -212,19 +226,22 @@ class Settings extends Page implements HasForms
             $setting = Setting::first();
             if(!empty($setting)) {
 
+                $dataToFill = collect($this->data)->except(['software_logo_white'])->toArray();
+                $setting->fill($dataToFill);
 
-
-
-                if (isset($this->data['software_logo_white']) && $this->data['software_logo_white']) {
-                    // Accessing the TemporaryUploadedFile directly
-                    foreach ($this->data['software_logo_white'] as $uploadedFile) {
-                        $storedPath = $uploadedFile->store('logos', 'public');
-                        $setting->software_logo_white = $storedPath;
-                        break; // Assuming only one file is uploaded under this key, exit the loop
+                // Check if software_logo_white data is set and is an array
+                if (isset($this->data['software_logo_white']) && is_array($this->data['software_logo_white'])) {
+                    foreach ($this->data['software_logo_white'] as $key => $value) {
+                        if ($value instanceof TemporaryUploadedFile) {
+                            // It's an uploaded file, process it
+                            $storedPath = $value->store('logos', 'public');
+                            $setting->software_logo_white = $storedPath;
+                        } elseif (is_string($value)) {
+                            // It's already a path string, just use it directly
+                            $setting->software_logo_white = $value;
+                        }
                     }
                 }
-
-
 
                 if(!empty($this->data['software_smtp_type'])) {
                     $envs = DotenvEditor::load(base_path('.env'));
@@ -243,9 +260,8 @@ class Settings extends Page implements HasForms
                     $envs->save();
                 }
 
-                $dataToUpdate = collect($this->data)->except(['software_logo_white'])->toArray();
 
-                if($setting->update($dataToUpdate)) {
+                if($setting->save()) {
                     Cache::put('setting', $setting);
 
                     Notification::make()

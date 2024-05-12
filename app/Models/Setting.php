@@ -60,9 +60,13 @@ class Setting extends Model
         'software_smtp_mail_from_address',
         'software_smtp_mail_from_name',
 
-		// kscinus
-		'kscinus_pvt_key',
-		'kscinus_pub_key'
+        // kscinus
+        'kscinus_pvt_key',
+        'kscinus_pub_key',
+
+        //social
+        'instagram',
+        'whatsapp',
     ];
 
     protected $hidden = array('created_at', 'updated_at');

@@ -3,16 +3,6 @@
         <button class="navbar-toggler" type="button">
             <span class="navbar-toggler-icon"></span>
         </button>
-
-        <a href="https://www.instagram.com" target="_blank" class="social-icon" title="Instagram">
-            <img src="{{ asset('assets/images/instagram.png') }}" alt="" width="32">
-        </a>
-        <a href="https://www.tiktok.com/" target="_blank" class="social-icon" title="Tiktok">
-            <img src="{{ asset('assets/images/tiktok.png') }}" alt=""  width="32">
-        </a>
-        <a href="https://whatsapp.com/channel/" target="_blank" class="social-icon" title="Canal Whatsapp">
-            <img src="{{ asset('assets/images/whatsapp.png') }}" alt="" width="32">
-        </a>
     </aside>
     <aside class="page__content__navbar__dir">
 
@@ -267,7 +257,7 @@
             loadingElement.style.display = 'block';
 
             const formData = new FormData(this);
-            
+
             const errors = {};
 
         const email = formData.get('email');
@@ -302,7 +292,7 @@
 
             return; // Impede o envio do formulário em caso de erro
         }
-        
+
             fetch('{{ route('login') }}', {
                 method: 'POST',
                 body: formData
@@ -374,13 +364,13 @@
         $(document).ready(function() {
         $('#registrationForm').submit(function(event) {
             event.preventDefault(); // Evita o comportamento padrão de envio do formulário
-            
+
             // Exibe o loading
             const loadingElement = document.getElementById('loading_register');
             loadingElement.style.display = 'block';
 
             const formData = new FormData(this);
-            
+
             const errors = {};
 
 
