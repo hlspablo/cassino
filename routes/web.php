@@ -13,9 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/test', function () {
-    return view('emails.new-withdrawal', ['valor' => \Helper::amountFormatDecimal(150), 'usuario' => 'Victor']);
-});
 
 include_once(__DIR__ . '/groups/auth/login.php');
 include_once(__DIR__ . '/groups/auth/social.php');

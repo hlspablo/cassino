@@ -21,19 +21,22 @@ class AffiliateController extends Controller
             'time' => time()
         ]);
 
+        $setting = \Helper::getSetting();
+
         $indications = User::where('inviter', auth()->id())->paginate();
         $histories = AffiliateHistory::where('inviter', auth()->id())->paginate();
         $histories->setPageName('affiliate_history');
 
-        return view('panel.affiliates.index', compact('token', 'indications', 'histories'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return view('panel.affiliates.index', [
+            'title' => $setting->software_name,
+            'logo_url' => $setting->software_logo_white,
+            'description' => $setting->software_description,
+            'instagram' => ltrim($setting->instagram, '@'),
+            'whatsapp' => $setting->whatsapp,
+            'indications' => $indications,
+            'histories' => $histories,
+            'token' => $token,
+        ]);
     }
 
     /**
@@ -58,7 +61,7 @@ class AffiliateController extends Controller
             'email' => 'required',
         ]);
 
-        \Mail::send('emails.join-affiliate', ['email' => $request->get('email')], function ($message) use($request) {
+        \Mail::send('emails.join-affiliate', ['email' => $request->get('email')], function ($message) use ($request) {
             $message->from(env('MAIL_FROM_ADDRESS'));
             $message->to('vinenzosoftware@gmail.com', 'PEDIDO DE AFILIADO')
                 ->subject(env('APP_NAME'));
@@ -67,27 +70,4 @@ class AffiliateController extends Controller
         return back()->with('success', 'Seu e-mail foi enviado com sucesso. Aguarde o contato!');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

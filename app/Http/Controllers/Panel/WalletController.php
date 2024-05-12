@@ -19,8 +19,18 @@ class WalletController extends Controller
      */
     public function index(Request $request)
     {
+
+        $setting = \Helper::getSetting();
         $orders = Order::where('user_id', auth()->id())->paginate();
-        return view('panel.wallet.index', compact(['orders']));
+
+        return view('panel.wallet.index', [
+            'title' => $setting->software_name,
+            'logo_url' => $setting->software_logo_white,
+            'description' => $setting->software_description,
+            'instagram' => ltrim($setting->instagram, '@'),
+            'whatsapp' => $setting->whatsapp,
+            'orders' => $orders,
+        ]);
     }
 
     /**
@@ -28,8 +38,17 @@ class WalletController extends Controller
      */
     public function viewWithdrawals(Request $request)
     {
+
+        $setting = \Helper::getSetting();
         $withdrawals = Withdrawal::whereUserId(auth()->id())->latest()->paginate();
-        return view('panel.wallet.withdrawal', compact(['withdrawals']));
+        return view('panel.wallet.withdrawal', [
+            'title' => $setting->software_name,
+            'logo_url' => $setting->software_logo_white,
+            'description' => $setting->software_description,
+            'instagram' => ltrim($setting->instagram, '@'),
+            'whatsapp' => $setting->whatsapp,
+            'withdrawals' => $withdrawals,
+        ]);
     }
 
     /**
@@ -37,8 +56,17 @@ class WalletController extends Controller
      */
     public function viewDeposits()
     {
+
+        $setting = \Helper::getSetting();
         $deposits = Deposit::whereUserId(auth()->id())->latest()->paginate();
-        return view('panel.wallet.deposits', compact(['deposits']));
+        return view('panel.wallet.deposits', [
+            'title' => $setting->software_name,
+            'logo_url' => $setting->software_logo_white,
+            'description' => $setting->software_description,
+            'instagram' => ltrim($setting->instagram, '@'),
+            'whatsapp' => $setting->whatsapp,
+            'deposits' => $deposits,
+        ]);
     }
 
     /**
@@ -122,37 +150,5 @@ class WalletController extends Controller
         }
 
         return response()->json(['status' => false, 'error' => 'Você precisa aceitar os termos']);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

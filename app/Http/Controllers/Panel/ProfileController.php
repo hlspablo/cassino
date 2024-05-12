@@ -13,15 +13,15 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        return view('panel.profile.index');
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $setting = \Helper::getSetting();
+        return view('panel.profile.index', [
+            'title' => $setting->software_name,
+            'logo_url' => $setting->software_logo_white,
+            'description' => $setting->software_description,
+            'instagram' => ltrim($setting->instagram, '@'),
+            'whatsapp' => $setting->whatsapp,
+        ]);
     }
 
     /**
@@ -38,14 +38,13 @@ class ProfileController extends Controller
         $data = $request->except(['email', 'old_password', 'new_password']);
 
         if(!empty($request->old_password)) {
-            if (Hash::check($request->old_password, auth()->user()->password))
-            {
+            if (Hash::check($request->old_password, auth()->user()->password)) {
                 $request->validate([
                     'new_password' => 'required|min:6',
                 ]);
 
                 $data['password'] = $request->new_password;
-            }else{
+            } else {
                 return back()->with('error', 'Senha não confere')->withInput();
             }
         }
@@ -53,37 +52,5 @@ class ProfileController extends Controller
         if(auth()->user()->update($data)) {
             return back()->with(['success' => 'Dados alterados com sucesso'])->withInput();
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }
