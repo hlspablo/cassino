@@ -19,3 +19,8 @@ yarn-error.log
 /.vscode
 banco.sql
 .DS_Store
+storage
+public
+lang
+package-lock.json
+storage/framework

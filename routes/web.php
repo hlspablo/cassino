@@ -28,7 +28,6 @@ Route::prefix('painel')
     ->middleware(['auth'])
     ->group(function () {
         include_once(__DIR__ . '/groups/panel/wallet.php');
-        include_once(__DIR__ . '/groups/panel/bets.php');
         include_once(__DIR__ . '/groups/panel/profile.php');
         include_once(__DIR__ . '/groups/panel/notifications.php');
         include_once(__DIR__ . '/groups/panel/affiliates.php');
@@ -40,7 +39,6 @@ Route::middleware(['web'])
         include_once(__DIR__ . '/groups/web/home.php');
         include_once(__DIR__ . '/groups/web/game.php');
         include_once(__DIR__ . '/groups/web/category.php');
-        include_once(__DIR__ . '/groups/web/bets.php');
         include_once(__DIR__ . '/groups/web/vgames.php');
         include_once(__DIR__ . '/groups/web/kscinus.php');
     });
