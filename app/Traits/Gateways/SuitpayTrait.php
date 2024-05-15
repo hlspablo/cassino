@@ -65,7 +65,7 @@ trait SuitpayTrait
 
 
         $sec_token = Str::random(40);
-        $test_callback = 'https://8070-167-250-139-77.ngrok-free.app/suitpay/callback?sec_token='.$sec_token;
+        // $test_callback = 'https://8070-167-250-139-77.ngrok-free.app/suitpay/callback?sec_token='.$sec_token;
         $callback_prod = url('/suitpay/callback?sec_token='.$sec_token);
 
         $response = Http::withHeaders([
@@ -77,7 +77,7 @@ trait SuitpayTrait
             "amount" => \Helper::amountPrepare($request->amount),
             "shippingAmount" => 0.0,
             "usernameCheckout" => "checkout",
-            "callbackUrl" => $test_callback,
+            "callbackUrl" => $callback_prod,
             "client" => [
                 "name" => auth()->user()->name,
                 "document" => \Helper::soNumero($request->cpf),

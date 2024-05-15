@@ -5,10 +5,6 @@ namespace App\Providers\Filament;
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
 use App\Filament\Pages\Settings;
 use App\Filament\Pages\SuitPayPaymentPage;
-use App\Filament\Resources\BetCategoryResource;
-use App\Filament\Resources\BetEventResource;
-use App\Filament\Resources\BetSectionResource;
-use App\Filament\Resources\BetUserResource;
 use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\DepositResource;
 use App\Filament\Resources\GameExclusiveResource;
@@ -21,7 +17,6 @@ use App\Filament\Resources\WithdrawalResource;
 use App\Livewire\AdminWidgets;
 use App\Livewire\LatestAdminComissions;
 use App\Livewire\WalletOverview;
-use App\Models\BetCategory;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -87,7 +82,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                //'hasRole:0|1'
             ])
             ->plugin(FilamentSpatieRolesPermissionsPlugin::make())
             ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
@@ -104,31 +98,20 @@ class AdminPanelProvider extends PanelProvider
                                 ->label(fn (): string => 'Configurações')
                                 ->url(fn (): string => Settings::getUrl())
                                 ->isActiveWhen(fn () => request()->routeIs('filament.pages.settings'))
-                                ->visible(fn(): bool => auth()->user()->hasRole('admin')),
+                                ->visible(fn (): bool => auth()->user()->hasRole('admin')),
                             NavigationItem::make('suitpay-pagamentos')
                                 ->icon('heroicon-o-currency-dollar')
                                 ->label(fn (): string => 'SuitPay Pagamentos')
                                 ->url(fn (): string => SuitPayPaymentPage::getUrl())
                                 ->isActiveWhen(fn () => request()->routeIs('filament.pages.suit-pay-payment-page'))
-                                ->visible(fn(): bool => auth()->user()->hasRole('admin')),
+                                ->visible(fn (): bool => auth()->user()->hasRole('admin')),
                         ])
                     ,
-
-                    //auth()->user()->hasRole('admin') ?
-                       // NavigationGroup::make('Apostas')
-                          //  ->items([
-                           //     ...BetSectionResource::getNavigationItems(),
-                           //     ...BetCategoryResource::getNavigationItems(),
-                           //     ...BetEventResource::getNavigationItems(),
-                           //     ...BetUserResource::getNavigationItems(),
-                           // ])
-                     //   : NavigationGroup::make()
-                   // ,
                     auth()->user()->hasRole('admin') ?
                         NavigationGroup::make('Meus Jogos')
                             ->items([
                                 ...GameExclusiveResource::getNavigationItems(),
-								...KscinusGamesResource::getNavigationItems(),
+                                ...KscinusGamesResource::getNavigationItems(),
                                 ...CategoryResource::getNavigationItems(),
                                 ...GameResource::getNavigationItems(),
                             ])
@@ -180,6 +163,6 @@ class AdminPanelProvider extends PanelProvider
 
                 ]);
             })
-            ;
+        ;
     }
 }

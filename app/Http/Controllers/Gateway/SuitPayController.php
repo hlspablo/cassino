@@ -23,15 +23,13 @@ class SuitPayController extends Controller
         $data = $request->all();
         $realIp = $request->ip();
 
-        //TODO: enable for production
+        $allowedIps = ['162.243.162.250', '192.34.62.86',
+            '137.184.60.127','159.223.100.252',
+            '157.245.93.131', '208.68.39.149'];
 
-        // $allowedIps = ['162.243.162.250', '192.34.62.86',
-        //     '137.184.60.127','159.223.100.252',
-        //     '157.245.93.131', '208.68.39.149'];
-        //
-        // if(!in_array($realIp, $allowedIps)) {
-        //     return response()->json([], 403);
-        // }
+        if(!in_array($realIp, $allowedIps)) {
+            return response()->json([], 403);
+        }
 
         $sec_token = $request->query('sec_token');
 

@@ -1,23 +1,23 @@
-<?php $__env->startSection('title', 'JOGUINHO - Cassino Online | Jogos de Slot e Apostas em Futebol'); ?>
+<?php $__env->startSection('title', "{$title}"); ?>
 
 <?php $__env->startSection('seo'); ?>
     <link rel="canonical" href="<?php echo e(url()->current()); ?>" />
-    <meta name="description" content="Bem-vindo à JOGUINHO - o melhor cassino online com uma ampla seleção de jogos de slot, apostas em jogos de futebol e uma experiência de aposta fácil e divertida. Jogue Fortune Tiger, Fortune OX e muito mais!">
-    <meta name="keywords" content="JOGUINHO, cassino online, jogos de slot, apostas em futebol, Fortune Tiger, Fortune OX">
+    <meta name="description" content="  ">
+    <meta name="keywords" content="<?php echo e($description); ?>">
 
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="JOGUINHO - Apostas Online | Jogos de Slot e Apostas em Futebol" />
-    <meta property="og:description" content="Bem-vindo à JOGUINHO - o melhor cassino online com uma ampla seleção de jogos de slot, apostas em jogos de futebol e uma experiência de aposta fácil e divertida. Jogue Fortune Tiger, Fortune OX e muito mais!" />
+    <meta property="og:title" content="<?php echo e($title); ?> | <?php echo e($description); ?>" />
+    <meta property="og:description" content="<?php echo e($description); ?>" />
     <meta property="og:url" content="<?php echo e(url()->current()); ?>" />
-    <meta property="og:site_name" content="JOGUINHO - Apostas Online | Jogos de Slot e Apostas em Futebol" />
+    <meta property="og:site_name" content="<?php echo e($title); ?>" />
     <meta property="og:image" content="<?php echo e(asset('/assets/images/banner-1.png')); ?>" />
     <meta property="og:image:secure_url" content="<?php echo e(asset('/assets/images/banner-1.png')); ?>" />
     <meta property="og:image:width" content="1024" />
     <meta property="og:image:height" content="571" />
 
-    <meta name="twitter:title" content="JOGUINHO - Apostas Online | Jogos de Slot e Apostas em Futebol">
-    <meta name="twitter:description" content="Bem-vindo à JOGUINHO - o melhor cassino online com uma ampla seleção de jogos de slot, apostas em jogos de futebol e uma experiência de aposta fácil e divertida. Jogue Fortune Tiger, Fortune OX e muito mais!">
+    <meta name="twitter:title" content="<?php echo e($title); ?>">
+    <meta name="twitter:description" content="<?php echo e($description); ?>">
     <meta name="twitter:image" content="<?php echo e(asset('/assets/images/banner-1.png')); ?>"> <!-- Substitua pelo link da imagem que deseja exibir -->
     <meta name="twitter:url" content="<?php echo e(url('/')); ?>"> <!-- Substitua pelo link da sua página -->
 <?php $__env->stopSection(); ?>
@@ -162,28 +162,6 @@
     <script src="<?php echo e(asset('assets/js/splide.min.js')); ?>"></script>
     <script>
         document.addEventListener( 'DOMContentLoaded', function () {
-            var elemento = document.getElementById('splide-soccer');
-
-            if (elemento) {
-                new Splide( '#splide-soccer', {
-                    type   : 'loop',
-                    drag   : 'free',
-                    focus  : 'center',
-                    autoplay: 'play',
-                    perPage: 3,
-                    arrows: false,
-                    pagination: false,
-                    breakpoints: {
-                        640: {
-                            perPage: 1,
-                        },
-                    },
-                    autoScroll: {
-                        speed: 1,
-                    },
-                }).mount();
-            }
-
             new Splide( '#image-carousel', {
                 arrows: false,
                 pagination: false,

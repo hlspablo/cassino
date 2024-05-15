@@ -42,7 +42,6 @@ class Setting extends Model
         // Percent
         'ngr_percent',
         'revshare_percentage',
-        'soccer_percentage',
         'initial_bonus',
 
         // Suitpay

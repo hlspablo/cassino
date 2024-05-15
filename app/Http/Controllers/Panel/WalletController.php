@@ -11,6 +11,7 @@ use App\Notifications\NewDepositNotification;
 use App\Notifications\NewWithdrawalNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class WalletController extends Controller
 {
@@ -95,6 +96,10 @@ class WalletController extends Controller
         $totalRollover = \App\Models\Order::where('user_id', auth()->id())->sum('amount');
         $checkRollover = $totalRollover > $totalDeposits;
 
+        Log::info('totalDeposits: '.$totalDeposits);
+        Log::info('totalRollover: '.$totalRollover);
+        Log::info('checkRollover: '.$checkRollover);
+
         $setting = \Helper::getSetting();
         $rules = [
             'amount' => [
@@ -104,7 +109,6 @@ class WalletController extends Controller
                 'max:'.$setting->max_withdrawal,
                 function ($attribute, $value, $fail) use ($checkRollover) {
                     if (!$checkRollover) {
-                        // $fail("Você precisa apostar $totalDeposits depositados, para poder sacar.");
                         $fail("Você precisa jogar para poder sacar.");
                     }
                 },

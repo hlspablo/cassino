@@ -10,8 +10,5 @@ Route::prefix('wallet')
         Route::get('/withdrawals', [WalletController::class, 'viewWithdrawals'])->name('withdrawals');
         Route::get('/deposits', [WalletController::class, 'viewDeposits'])->name('deposits');
         Route::get('/hide-balance', [WalletController::class, 'hideBalance'])->name('hidebalance');
-
-
-        // Route::post('/deposit', [WalletController::class, 'generateDeposit'])->name('deposit');
-        Route::post('/withdrawal', [WalletController::class, 'requestWithdra'])->name('withdrawal');
+        Route::post('/withdrawal', [WalletController::class, 'requestWithdrawal'])->name('withdrawal');
     });

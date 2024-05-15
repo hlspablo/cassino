@@ -92,11 +92,6 @@ class Settings extends Page implements HasForms
                 Section::make('Taxas')
                     ->description('Configurações de Ganhos da Plataforma')
                     ->schema([
-                        TextInput::make('soccer_percentage')
-                            ->label('Futebol Comissão (%)')
-                            ->numeric()
-                            ->suffix('%')
-                            ->maxLength(191),
                         TextInput::make('revshare_percentage')
                             ->label('RevShare (%)')
                             ->numeric()
