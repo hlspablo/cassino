@@ -1,7 +1,7 @@
 <nav id="navbarContent" class="page__navbar">
     <div class="page__navbar__logo">
         <a class="page__navbar__logo" href="{{ url('/') }}">
-            <img src="{{ asset("storage/".$logo_url) }}" alt="" style="max-width:100%">
+            <img src="{{ asset('storage/' . config('setting')->software_logo_white) }}" alt="" style="max-width:100%">
         </a>
 
         <button class="navbar-toggler-close close-button" type="button">

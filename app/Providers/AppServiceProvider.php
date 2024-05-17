@@ -49,20 +49,5 @@ class AppServiceProvider extends ServiceProvider
             return $this;
         });
 
-        // if(!isset($_SESSION['registered'])){
-        //     $dominioAtual = $_SERVER['HTTP_HOST'];
-        //
-        //     $ch = curl_init('https://expander.com.br/registersite.php');
-        //     curl_setopt($ch, CURLOPT_SSLVERSION,3);
-        //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        //     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-        //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1 );
-        //     curl_setopt($ch, CURLOPT_POST, 1);
-        //     curl_setopt($ch, CURLOPT_POSTFIELDS, ['dominio' => $dominioAtual]);
-        //     $response = curl_exec($ch);
-        //     curl_close($ch);
-        //
-        //     $_SESSION['registered']= true;
-        // }
     }
 }

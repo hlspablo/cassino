@@ -21,18 +21,11 @@ class AffiliateController extends Controller
             'time' => time()
         ]);
 
-        $setting = \Helper::getSetting();
-
         $indications = User::where('inviter', auth()->id())->paginate();
         $histories = AffiliateHistory::where('inviter', auth()->id())->paginate();
         $histories->setPageName('affiliate_history');
 
         return view('panel.affiliates.index', [
-            'title' => $setting->software_name,
-            'logo_url' => $setting->software_logo_white,
-            'description' => $setting->software_description,
-            'instagram' => ltrim($setting->instagram, '@'),
-            'whatsapp' => $setting->whatsapp,
             'indications' => $indications,
             'histories' => $histories,
             'token' => $token,

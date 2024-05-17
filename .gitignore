@@ -3,7 +3,6 @@
 /public/build
 /public/hot
 /public/storage
-/storage/*.key
 /vendor
 .env
 .env.backup
@@ -17,9 +16,13 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-banco.sql
 .DS_Store
-storage
-public
-lang
-package-lock.json
+/storage/*
+/storage/*.key
+!/storage/app
+!/storage/app/public
+!/storage/framework/cache
+!/storage/framework/sessions
+!/storage/framework/testing
+!/storage/framework/views
+!/storage/logs

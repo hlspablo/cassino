@@ -11,12 +11,12 @@
                 <div class="footer-social">
                     <div class="row">
                         <div class="col">
-                            <a href="https://www.instagram.com/<?php echo e($instagram); ?>" target="_blank">
+                            <a href="https://www.instagram.com/<?php echo e(config('setting')->instagram); ?>" target="_blank">
                                 <img src="<?php echo e(asset('/assets/images/social/instagram.png')); ?>" alt="Instagram">
                             </a>
                         </div>
                         <div class="col">
-                            <a href="https://api.whatsapp.com/send?phone=<?php echo e($whatsapp); ?>" target="_blank">
+                            <a href="https://api.whatsapp.com/send?phone=<?php echo e(config('setting')->whatsapp); ?>" target="_blank">
                                 <img src="<?php echo e(asset('/assets/images/social/whats.png')); ?>" alt="Whatsapp ">
                             </a>
                         </div>

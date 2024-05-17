@@ -1,24 +1,24 @@
-<?php $__env->startSection('title', "{$title}"); ?>
+<?php $__env->startSection('title', config('setting')->software_name); ?>
 
 <?php $__env->startSection('seo'); ?>
     <link rel="canonical" href="<?php echo e(url()->current()); ?>" />
     <meta name="description" content="  ">
-    <meta name="keywords" content="<?php echo e($description); ?>">
+    <meta name="keywords" content="<?php echo e(config('setting')->software_description); ?>">
 
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="<?php echo e($title); ?> | <?php echo e($description); ?>" />
-    <meta property="og:description" content="<?php echo e($description); ?>" />
+    <meta property="og:title" content="<?php echo e(config('setting')->software_name); ?> | <?php echo e(config('setting')->software_description); ?>" />
+    <meta property="og:description" content="<?php echo e(config('setting')->software_description); ?>" />
     <meta property="og:url" content="<?php echo e(url()->current()); ?>" />
-    <meta property="og:site_name" content="<?php echo e($title); ?>" />
-    <meta property="og:image" content="<?php echo e(asset('/assets/images/banner-1.png')); ?>" />
-    <meta property="og:image:secure_url" content="<?php echo e(asset('/assets/images/banner-1.png')); ?>" />
+    <meta property="og:site_name" content="<?php echo e(config('setting')->software_name); ?>" />
+    <meta property="og:image" content="<?php echo e(asset('storage/' . config('setting')->software_logo_white)); ?>" />
+    <meta property="og:image:secure_url" content="<?php echo e(asset('storage/' . config('setting')->software_logo_white)); ?>" />
     <meta property="og:image:width" content="1024" />
     <meta property="og:image:height" content="571" />
 
-    <meta name="twitter:title" content="<?php echo e($title); ?>">
-    <meta name="twitter:description" content="<?php echo e($description); ?>">
-    <meta name="twitter:image" content="<?php echo e(asset('/assets/images/banner-1.png')); ?>"> <!-- Substitua pelo link da imagem que deseja exibir -->
+    <meta name="twitter:title" content="<?php echo e(config('setting')->software_name); ?>">
+    <meta name="twitter:description" content="<?php echo e(config('setting')->software_description); ?>">
+    <meta name="twitter:image" content="<?php echo e(asset('storage/' . config('setting')->software_logo_white)); ?>"> <!-- Substitua pelo link da imagem que deseja exibir -->
     <meta name="twitter:url" content="<?php echo e(url('/')); ?>"> <!-- Substitua pelo link da sua página -->
 <?php $__env->stopSection(); ?>
 
@@ -33,14 +33,14 @@
         <div class="page__content">
             <?php echo $__env->make('includes.navbar_top', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-            <section class="modelo-destaque-jogos">
-
+        <section class="modelo-destaque-jogos">
+            <?php if(config('setting')->promo_banner): ?>
                 <section id="image-carousel" class="splide" aria-label="">
                     <div class="splide__track">
                         <ul class="splide__list">
                             <li class="splide__slide">
-                                <a href="<?php echo e(url('/vgames/exclusive/fortunetiger')); ?>">
-                                    <img src="<?php echo e(asset('assets/images/hallowen_de_apostas.jpg')); ?>" alt="">
+                                <a href="https://<?php echo e(config('setting')->promo_link); ?>">
+                                    <img src="<?php echo e(asset('storage/' . config('setting')->promo_banner)); ?>" alt="Banner Promocional">
                                 </a>
                             </li>
                             <li class="splide__slide">
@@ -55,7 +55,8 @@
                             </li>
                         </ul>
                     </div>
-                </section>
+            </section>
+            <?php endif; ?>
 
                 <?php if(count($gamesExclusives) > 0): ?>
                     <div class="mt-5">

@@ -70,6 +70,21 @@ class Settings extends Page implements HasForms
                             ->image(),
 
                     ])->columns(2),
+                Section::make('Promoções')
+                    ->schema([
+                        FileUpload::make('promo_banner')
+                            ->label('Banner Promocional (1920x540)')
+                            ->placeholder('Clique para selecionar')
+                            ->directory('banners')
+                            ->disk('public')
+                            ->image(),
+                        TextInput::make('promo_link')
+                            ->label('Link do Banner')
+                            ->maxLength(191),
+                        TextInput::make('promo_text')
+                            ->label('Texto Promocional')
+                            ->maxLength(191),
+                    ])->columns(1),
                 Section::make('Depósitos e Saques')
                     ->schema([
                         TextInput::make('min_deposit')
@@ -234,6 +249,20 @@ class Settings extends Page implements HasForms
                         } elseif (is_string($value)) {
                             // It's already a path string, just use it directly
                             $setting->software_logo_white = $value;
+                        }
+                    }
+                }
+
+                // Check if software_logo_white data is set and is an array
+                if (isset($this->data['promo_banner']) && is_array($this->data['promo_banner'])) {
+                    foreach ($this->data['promo_banner'] as $key => $value) {
+                        if ($value instanceof TemporaryUploadedFile) {
+                            // It's an uploaded file, process it
+                            $storedPath = $value->store('banners', 'public');
+                            $setting->promo_banner = $storedPath;
+                        } elseif (is_string($value)) {
+                            // It's already a path string, just use it directly
+                            $setting->promo_banner = $value;
                         }
                     }
                 }

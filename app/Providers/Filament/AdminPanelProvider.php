@@ -57,7 +57,7 @@ class AdminPanelProvider extends PanelProvider
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
             ])
-            ->font('Roboto Condensed')
+            ->font('Roboto')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -65,9 +65,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                WalletOverview::class,
-                AdminWidgets::class,
-                LatestAdminComissions::class,
+                // WalletOverview::class,
+                // AdminWidgets::class,
+                // LatestAdminComissions::class,
             ])
             ->middleware([
                 EncryptCookies::class,

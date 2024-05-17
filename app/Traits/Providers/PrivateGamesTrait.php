@@ -11,7 +11,6 @@ use Illuminate\Http\JsonResponse;
 
 trait PrivateGamesTrait
 {
-
     /**
      * @param string $token
      * @param array $settingGame
@@ -107,15 +106,19 @@ trait PrivateGamesTrait
             $loseResults        = $dataLose;
             $demoWinResults     = $dataDemo;
 
-//            $checkFirstDeposit  = Transaction::where('user_id', auth()->id())->where('status', 1)->count();
-//            if($checkFirstDeposit == 1 || $checkFirstDeposit == 2) {
-//                $winResults     = $dataWin;
-//            }else{
-//                $winResults     = $bet >= 10 && $bet <= 50 ? $dataWin : [];
-//            }
+            //            $checkFirstDeposit  = Transaction::where('user_id', auth()->id())->where('status', 1)->count();
+            //            if($checkFirstDeposit == 1 || $checkFirstDeposit == 2) {
+            //                $winResults     = $dataWin;
+            //            }else{
+            //                $winResults     = $bet >= 10 && $bet <= 50 ? $dataWin : [];
+            //            }
 
             $winResults         = $dataWin;
             $bonusResults       = $dataBonus;
+
+            // double possible lose results to 36 ppssible results
+            $loseResults = array_merge($loseResults, $loseResults);
+
 
             shuffle($loseResults);
             shuffle($demoWinResults);
@@ -143,8 +146,7 @@ trait PrivateGamesTrait
 
             if ($wallet->balance + $wallet->balance_bonus < $bet) {
                 return response()->json("Insuficient balances", 400);
-            }
-            else {
+            } else {
                 if ($wallet->balance >= $bet) {
                     $wallet->decrement('balance', $bet);
                 } else {
@@ -170,6 +172,18 @@ trait PrivateGamesTrait
             $pull['ActiveIcons']    = $result[1];
             $pull['ActiveLines']    = $result[2];
             $pull['DropLineData']   = $result[3];
+
+            // // Log original lengths of data arrays
+            // \Log::info('Original Win Data Length: ' . count($dataWin));
+            // \Log::info('Original Lose Data Length: ' . count($dataLose));
+            //
+            //
+            // \Log::info('Win Length: ' . $winLength);
+            // \Log::info('Lose Length: ' . $loseLength);
+            //
+            //
+            // \Log::info('Win Results Length: ' . count($winResults));
+            // \Log::info('Lose Results Length: ' . count($loseResults));
 
             $data = [
                 "credit"            => ($wallet->balance + $wallet->balance_bonus),

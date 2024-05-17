@@ -66,6 +66,9 @@ class Setting extends Model
         //social
         'instagram',
         'whatsapp',
+        'promo_banner',
+        'promo_text',
+        'promo_link',
     ];
 
     protected $hidden = array('created_at', 'updated_at');

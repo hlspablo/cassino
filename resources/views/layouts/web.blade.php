@@ -28,9 +28,11 @@
         <!-- Fontawesome -->
         <link href="{{ asset('assets/css/fontawesome.min.css') }}" rel="stylesheet" type="text/css" />
 
-        <!-- Google font-->
-        <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;1,100;1,200;1,300;1,400;1,500&family=Catamaran:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:wght@100;200;300;400;500&family=Roboto+Condensed:wght@300&display=swap" rel="stylesheet">
-        <!-- Main Css -->
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+
         <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet" type="text/css" id="theme-opt" />
 
         @stack('styles')
@@ -47,9 +49,9 @@
     </head>
 
     <body>
-        @if(!in_array(request()->route()->getName(), ['web.vgames.show', 'web.bets.show']))
+        @if(!in_array(request()->route()->getName(), ['web.vgames.show']) && !empty(config('setting')->promo_text))
             <div class="banner-top">
-                <p>Dobre o seu depósito! Deposite R$ 50 e ganhe R$ 100.</p>
+                <p>{{ config('setting')->promo_text }}</p>
             </div>
         @endif
 

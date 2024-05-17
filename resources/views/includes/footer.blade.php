@@ -11,12 +11,12 @@
                 <div class="footer-social">
                     <div class="row">
                         <div class="col">
-                            <a href="https://www.instagram.com/{{$instagram}}" target="_blank">
+                            <a href="https://www.instagram.com/{{ config('setting')->instagram }}" target="_blank">
                                 <img src="{{ asset('/assets/images/social/instagram.png') }}" alt="Instagram">
                             </a>
                         </div>
                         <div class="col">
-                            <a href="https://api.whatsapp.com/send?phone={{$whatsapp}}" target="_blank">
+                            <a href="https://api.whatsapp.com/send?phone={{ config('setting')->whatsapp }}" target="_blank">
                                 <img src="{{ asset('/assets/images/social/whats.png') }}" alt="Whatsapp ">
                             </a>
                         </div>

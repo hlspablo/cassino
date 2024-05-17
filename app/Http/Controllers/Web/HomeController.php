@@ -27,18 +27,11 @@ class HomeController extends Controller
                             ->orderBy('views', 'desc')
                             ->get();
 
-        $setting = \Helper::getSetting();
-
         return view('web.home.index', [
             'gamesPopulars' => $gamesPopulars,
             'games' => $games,
             'gamesExclusives' => $gamesExclusives,
             'gamesPragmatic' => $gamesPragmatic,
-            'title' => $setting->software_name,
-            'logo_url' => $setting->software_logo_white,
-            'description' => $setting->software_description,
-            'instagram' => ltrim($setting->instagram, '@'),
-            'whatsapp' => $setting->whatsapp,
         ]);
     }
 

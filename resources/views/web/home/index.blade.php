@@ -1,26 +1,26 @@
 @extends('layouts.web')
 
-@section('title', "{$title}")
+@section('title', config('setting')->software_name)
 
 @section('seo')
     <link rel="canonical" href="{{ url()->current() }}" />
     <meta name="description" content="  ">
-    <meta name="keywords" content="{{$description}}">
+    <meta name="keywords" content="{{ config('setting')->software_description }}">
 
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="{{$title}} | {{$description}}" />
-    <meta property="og:description" content="{{$description}}" />
+    <meta property="og:title" content="{{ config('setting')->software_name }} | {{ config('setting')->software_description }}" />
+    <meta property="og:description" content="{{ config('setting')->software_description }}" />
     <meta property="og:url" content="{{ url()->current() }}" />
-    <meta property="og:site_name" content="{{$title}}" />
-    <meta property="og:image" content="{{ asset('/assets/images/banner-1.png') }}" />
-    <meta property="og:image:secure_url" content="{{ asset('/assets/images/banner-1.png') }}" />
+    <meta property="og:site_name" content="{{ config('setting')->software_name }}" />
+    <meta property="og:image" content="{{ asset('storage/' . config('setting')->software_logo_white) }}" />
+    <meta property="og:image:secure_url" content="{{ asset('storage/' . config('setting')->software_logo_white) }}" />
     <meta property="og:image:width" content="1024" />
     <meta property="og:image:height" content="571" />
 
-    <meta name="twitter:title" content="{{$title}}">
-    <meta name="twitter:description" content="{{$description}}">
-    <meta name="twitter:image" content="{{ asset('/assets/images/banner-1.png') }}"> <!-- Substitua pelo link da imagem que deseja exibir -->
+    <meta name="twitter:title" content="{{ config('setting')->software_name }}">
+    <meta name="twitter:description" content="{{ config('setting')->software_description }}">
+    <meta name="twitter:image" content="{{ asset('storage/' . config('setting')->software_logo_white) }}"> <!-- Substitua pelo link da imagem que deseja exibir -->
     <meta name="twitter:url" content="{{ url('/') }}"> <!-- Substitua pelo link da sua página -->
 @endsection
 
@@ -35,14 +35,14 @@
         <div class="page__content">
             @include('includes.navbar_top')
 
-            <section class="modelo-destaque-jogos">
-
+        <section class="modelo-destaque-jogos">
+            @if(config('setting')->promo_banner)
                 <section id="image-carousel" class="splide" aria-label="">
                     <div class="splide__track">
                         <ul class="splide__list">
                             <li class="splide__slide">
-                                <a href="{{ url('/vgames/exclusive/fortunetiger') }}">
-                                    <img src="{{ asset('assets/images/hallowen_de_apostas.jpg') }}" alt="">
+                                <a href="https://{{ config('setting')->promo_link }}">
+                                    <img src="{{ asset('storage/' . config('setting')->promo_banner) }}" alt="Banner Promocional">
                                 </a>
                             </li>
                             <li class="splide__slide">
@@ -57,7 +57,8 @@
                             </li>
                         </ul>
                     </div>
-                </section>
+            </section>
+            @endif
 
                 @if(count($gamesExclusives) > 0)
                     <div class="mt-5">

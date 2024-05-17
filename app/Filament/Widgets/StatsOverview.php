@@ -23,6 +23,7 @@ class StatsOverview extends BaseWidget
     {
         $sevenDaysAgo = Carbon::now()->subDays(7);
 
+        // $totalWonLast7Days = Wallet::sum('total_won');
         $totalWonLast7Days = Wallet::sum('total_won');
         $totalLoseLast7Days = Wallet::sum('total_lose');
 
