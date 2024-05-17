@@ -202,8 +202,7 @@ trait SuitpayTrait
                             if($deposit->update(['status' => 1])) {
                                 $admins = User::where('role_id', 0)->get();
                                 foreach ($admins as $admin) {
-                                    // TODO: Enable on for SMTP
-                                    //$admin->notify(new NewDepositNotification($user->name, $transaction->price));
+                                    $admin->notify(new NewDepositNotification($user->name, $transaction->price));
                                 }
 
                                 return true;
