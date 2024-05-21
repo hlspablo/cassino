@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
+use Filament\Support\RawJs;
 
 class OrderChart extends ChartWidget
 {
@@ -13,6 +14,11 @@ class OrderChart extends ChartWidget
     protected static ?int $sort = 3;
 
     protected int | string | array $columnSpan = 'full';
+
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 
     protected function getData(): array
     {
@@ -34,6 +40,22 @@ class OrderChart extends ChartWidget
         return 'line';
     }
 
+
+    protected function getOptions(): RawJs
+    {
+        return RawJs::make(<<<JS
+        {
+            scales: {
+                y: {
+                    ticks: {
+                        callback: (value) => 'R$ ' + value,
+                    },
+                },
+            },
+        }
+    JS);
+    }
+
     /**
      * @return array
      */
@@ -43,9 +65,9 @@ class OrderChart extends ChartWidget
         $orderPerMonth = [];
         $months = [];
 
-        collect(range(1, 12))->each(function($month) use ($now, &$orderPerMonth, &$months) {
+        collect(range(1, 12))->each(function ($month) use ($now, &$orderPerMonth, &$months) {
             $monthDate = Carbon::parse($now)->month($month);
-            $sum = Order::where('type', 'bet')->whereMonth('created_at', $monthDate)->sum('amount');
+            $sum = Order::whereMonth('created_at', $monthDate)->sum('bet');
 
             $orderPerMonth[] = $sum;
             $months[] = $monthDate->format('M');

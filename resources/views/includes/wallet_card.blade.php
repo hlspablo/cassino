@@ -56,9 +56,11 @@
                             </div>
                         </div>
                         <div class="col-lg-6">
+                            @if(!empty(auth()->user()) && !auth()->user()->is_demo_agent)
                             <div class="d-grid mt-4">
                                 <button @if(!(auth()->user()->wallet->balance > 0)) disabled="disabled" @endif data-izimodal-open="#withdrawal-modal" data-izimodal-zindex="20000" data-izimodal-preventclose="" class="btn btn-success" type="button">SACAR</button>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>

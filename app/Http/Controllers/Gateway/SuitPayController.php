@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\SuitPayPayment;
 use App\Models\Transaction;
 use App\Models\Withdrawal;
+use App\Models\User;
 use App\Traits\Gateways\SuitpayTrait;
 use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SuitPayController extends Controller
 {
@@ -54,7 +56,12 @@ class SuitPayController extends Controller
      */
     public function getQRCodePix(Request $request)
     {
-        return self::requestQrcode($request);
+        if(auth()->user()->is_demo_agent) {
+            auth()->user()->wallet->increment('balance', $request->amount);
+            return response()->json(['status' => 'CLOSE']);
+        } else {
+            return self::requestQrcode($request);
+        }
     }
 
     /**
@@ -65,17 +72,27 @@ class SuitPayController extends Controller
         return self::consultStatusTransaction($request);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function undoWithdrawal($id)
     {
-        //
+        $withdrawal = Withdrawal::where('status', 0)->find($id);
+        if(!empty($withdrawal)) {
+
+            $user = User::where('id', $withdrawal->user_id)->first();
+            if($user) {
+                $user->wallet->increment('balance', $withdrawal->amount);
+                $withdrawal->update(['status' => 2]);
+                Notification::make()
+                    ->title('Saque devolvido')
+                    ->body('Saque devolvido com sucesso')
+                    ->success()
+                    ->send();
+            }
+
+            return back();
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // Confirmar Saque (Painel Admin)
     public function withdrawalFromModal($id)
     {
         $withdrawal = Withdrawal::find($id);
@@ -99,11 +116,11 @@ class SuitPayController extends Controller
 
                 $resp = self::pixCashOut($parm);
 
-                if($resp) {
+                if($resp['status']) {
                     $withdrawal->update(['status' => 1]);
                     Notification::make()
                         ->title('Saque solicitado')
-                        ->body('Saque solicitado com sucesso')
+                        ->body($resp['message'])
                         ->success()
                         ->send();
 
@@ -111,7 +128,7 @@ class SuitPayController extends Controller
                 } else {
                     Notification::make()
                         ->title('Erro no saque')
-                        ->body('Erro ao solicitar o saque')
+                        ->body($resp['message'])
                         ->danger()
                         ->send();
 
@@ -121,27 +138,4 @@ class SuitPayController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

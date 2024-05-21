@@ -32,6 +32,7 @@ class Order extends Model
         'game_uuid',
         'type',
         'type_money',
+        'bet',
         'amount',
         'providers',
         'refunded',

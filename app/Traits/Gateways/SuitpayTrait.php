@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 trait SuitpayTrait
 {
@@ -139,7 +140,7 @@ trait SuitpayTrait
             if(!empty($user) && !empty($user->inviter)) {
                 $afiliado =  User::find($user->inviter);
                 if(!empty($afiliado)) {
-
+                    // TODO:
                 }
             }
 
@@ -184,9 +185,10 @@ trait SuitpayTrait
 
                             if(!empty($affHistoryCPA)) {
 
-                                /// verifcia se já pode receber o cpa
+                                /// verifica se já pode receber o cpa
                                 $sponsorCpa = User::find($affHistoryCPA->inviter);
                                 if(!empty($sponsorCpa)) {
+                                    // TODO: add this to the user settings, and a default
                                     if($affHistoryCPA->deposited_amount > $sponsorCpa->affiliate_baseline) {
                                         $walletCpa = Wallet::where('user_id', $affHistoryCPA->inviter)->lockForUpdate()->first();
                                         if(!empty($walletCpa)) {
@@ -260,7 +262,7 @@ trait SuitpayTrait
      * @param $request
      * @return \Illuminate\Http\JsonResponse|void
      */
-    public static function pixCashOut(array $array): bool
+    public static function pixCashOut(array $array)
     {
         self::generateCredentials();
 
@@ -272,23 +274,33 @@ trait SuitpayTrait
             "typeKey" => $array['pix_type'],
             "value" => $array['amount'],
             'callbackUrl' => url('/suitpay/payment'),
-        ]);
+            ]);
 
-        if($response->successful()) {
-            $responseData = $response->json();
+        Log::info(['pixCashOut' => $response->json()]);
 
-            if($responseData['response'] == 'OK') {
-                $suitPayPayment = SuitPayPayment::lockForUpdate()->find($array['suitpayment_id']);
-                if(!empty($suitPayPayment)) {
-                    if($suitPayPayment->update(['status' => 1, 'payment_id' => $responseData['idTransaction']])) {
-                        return true;
-                    }
-                    return false;
+        $responseData = $response->json();
+
+        if($responseData['response'] == 'OK') {
+            $suitPayPayment = SuitPayPayment::lockForUpdate()->find($array['suitpayment_id']);
+            if(!empty($suitPayPayment)) {
+                if($suitPayPayment->update(['status' => 1, 'payment_id' => $responseData['idTransaction']])) {
+                    return ['status' => true, 'message' => 'Pagamento efetuado com sucesso'];
                 }
-                return false;
             }
-            return false;
         }
-        return false;
+
+        if($responseData['response'] == 'PIX_KEY_NOT_FOUND') {
+            return ['status' => false, 'message' => 'Chave Pix não encontrada'];
+        }
+
+        if($responseData['response'] == 'NO_FUNDS') {
+            return ['status' => false, 'message' => 'Saldo SuitPay Insuficiente.'];
+        }
+
+        if($responseData['response'] == 'UNAUTHORIZED_IP') {
+            return ['status' => false, 'message' => 'IP não autorizado'];
+        }
+
+        return ['status' => false, 'message' => 'Erro ao efetuar pagamento'];
     }
 }

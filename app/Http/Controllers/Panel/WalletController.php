@@ -73,24 +73,33 @@ class WalletController extends Controller
      */
     public function requestWithdrawal(Request $request)
     {
-        $totalDeposits = \App\Models\Deposit::where('user_id', auth()->id())->sum('amount');
-        $totalRollover = \App\Models\Order::where('user_id', auth()->id())->sum('amount');
-        $checkRollover = $totalRollover > $totalDeposits;
 
-        Log::info('totalDeposits: '.$totalDeposits);
-        Log::info('totalRollover: '.$totalRollover);
-        Log::info('checkRollover: '.$checkRollover);
+        if(auth()->user()->is_demo_agent) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Saque não permitido para conta influencer.'
+            ], 403);
+        }
 
         $setting = \Helper::getSetting();
+        $min_rollover = $setting->min_rollover;
+
+        $totalDeposits = \App\Models\Deposit::where('user_id', auth()->id())->sum('amount');
+        // TODO: check how bonus interact with rollover and withdrawal
+
+        $totalRollover = \App\Models\Order::where('user_id', auth()->id())->sum('amount');
+        $checkRollover = $totalRollover >= $min_rollover;
+        $diff = $min_rollover - $totalRollover;
+
         $rules = [
             'amount' => [
                 'required',
                 'numeric',
                 'min:'.$setting->min_withdrawal,
                 'max:'.$setting->max_withdrawal,
-                function ($attribute, $value, $fail) use ($checkRollover) {
+                function ($attribute, $value, $fail) use ($checkRollover, $diff) {
                     if (!$checkRollover) {
-                        $fail("Você precisa jogar para poder sacar.");
+                        $fail("Você precisa jogar mais ".\Helper::amountFormatDecimal($diff)." para solicitar um saque.");
                     }
                 },
             ],

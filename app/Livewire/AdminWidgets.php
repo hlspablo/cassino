@@ -10,8 +10,6 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class AdminWidgets extends BaseWidget
 {
-    protected static ?int $navigationSort = -2;
-
     /**
      * @return array|Stat[]
      */
@@ -23,7 +21,7 @@ class AdminWidgets extends BaseWidget
 
         return [
             Stat::make('Comissão', \Helper::amountFormatDecimal($comissaoTotal))
-                ->description('Comissão ganhos do afiliado')
+                ->description('Comissão')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success'),
             Stat::make('Comissão CPA', \Helper::amountFormatDecimal($comissaoCPAs))
@@ -40,6 +38,7 @@ class AdminWidgets extends BaseWidget
     /**
      * @return bool
      */
+
     public static function canView(): bool
     {
         return auth()->user()->hasRole('afiliado');

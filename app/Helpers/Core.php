@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Helpers;
-
 
 use App\Models\Activity;
 use App\Models\AffiliateHistory;
@@ -14,10 +12,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class Core
 {
-
     /**
      * @param $data
      * @return string|void
@@ -99,7 +97,7 @@ class Core
     private static function isCPF($cpf)
     {
         // Extrai somente os números
-        $cpf = preg_replace( '/[^0-9]/is', '', $cpf );
+        $cpf = preg_replace('/[^0-9]/is', '', $cpf);
 
         // Verifica se foi informado todos os digitos corretamente
         if (strlen($cpf) != 11) {
@@ -165,13 +163,12 @@ class Core
      * @param bool $changeBonus
      * @return mixed
      */
-    public static function generateGameHistory(User $user, $type, $amount, $bet, $nameGame, $gameId, bool $changeBonus = false)
+    public static function generateGameHistory(User $user, $type, $amount, $bet, $nameGame, $gameId, $changeBonus)
     {
         /// pagar afiliado
         if($type == 'loss' && !empty($user->inviter)) {
             $setting = \Helper::getSetting();
             $affiliate = User::find($user->inviter);
-
 
             if(!empty($affiliate)) {
                 $affHistoryRevshare = AffiliateHistory::where('user_id', $user->id)
@@ -181,10 +178,10 @@ class Core
                     ->first();
 
                 if(!empty($affHistoryRevshare)) {
-                    $lossPercentage = \Helper::porcentagem_xn($affiliate->affiliate_revenue_share, $bet);
-                    $ngr = \Helper::porcentagem_xn($setting->ngr_percent, $lossPercentage);
+                    $comission = \Helper::porcentagem_xn($affiliate->affiliate_revenue_share, $bet);
+                    $ngr_discount = \Helper::porcentagem_xn($setting->ngr_percent, $comission);
 
-                    $commissionPay = ($lossPercentage - $ngr);
+                    $commissionPay = ($comission - $ngr_discount);
                     $affHistoryRevshare->increment('losses', 1);
                     $affHistoryRevshare->increment('losses_amount', $commissionPay);
 
@@ -193,14 +190,19 @@ class Core
             }
         }
 
+        Log::info('generateGameHistory', [
+            'changeBonus' => $changeBonus
+        ]);
+
 
         return Order::create([
             'user_id' => $user->id,
             'session_id' => Str::random(20),
             'transaction_id' => Str::random(40),
             'type' => $type,
-            'type_money' => $changeBonus ? 'balance_bonus' : 'balance',
+            'type_money' => $changeBonus,
             'amount' => $type == 'loss' ? $bet : $amount,
+            'bet' => $bet,
             'providers' => 'VGames',
             'game' => $nameGame,
             'game_uuid' => $gameId,
@@ -241,7 +243,8 @@ class Core
      * @param $digits
      * @return float
      */
-    public static function ToFloat($val, $digits = 2) {
+    public static function ToFloat($val, $digits = 2)
+    {
         return (float)number_format($val, $digits, '.', '');
     }
 
@@ -249,7 +252,8 @@ class Core
      * @param $lines
      * @return float|int|mixed
      */
-    public static function CalcWinActiveLine($lines) {
+    public static function CalcWinActiveLine($lines)
+    {
         $aux = 0;
 
         if (sizeof($lines) > 0) {
@@ -266,7 +270,8 @@ class Core
      * @param $mult
      * @return array
      */
-    public static function CalcWinDropLine($drops, $mult) {
+    public static function CalcWinDropLine($drops, $mult)
+    {
         $total = 0;
         foreach($drops as $drop) {
             $amout = self::CalcWinActiveLine($drop['ActiveLines']);
@@ -316,7 +321,7 @@ class Core
     {
         if(auth()->check()) {
             return self::amountFormatDecimal(auth()->user()->wallet->balance + auth()->user()->wallet->balance_bonus);
-        }else{
+        } else {
             return self::amountFormatDecimal(0.00);
         }
     }
@@ -330,7 +335,7 @@ class Core
         $setting = null;
         if(Cache::has('setting')) {
             $setting = Cache::get('setting');
-        }else{
+        } else {
             $setting = Setting::first();
             Cache::put('setting', $setting);
         }
@@ -411,7 +416,7 @@ class Core
         $created_at = str_replace([' hours', ' hour'], ' h', $created_at);
         $created_at = str_replace([' months', ' month'], ' m', $created_at);
 
-        if(preg_match('(years|year)', $created_at)){
+        if(preg_match('(years|year)', $created_at)) {
             $created_at = Carbon::parse($date)->toFormattedDateString();
         }
 
@@ -478,7 +483,7 @@ class Core
                 'extension' => $extension,
                 'size'      => $size
             ];
-        }else{
+        } else {
             return false;
         }
     }
@@ -489,12 +494,12 @@ class Core
      * @param $number
      * @return mixed|string
      */
-    public static function formatNumber( $number )
+    public static function formatNumber($number)
     {
-        if( $number >= 1000 &&  $number < 1000000 ) {
-            return number_format( $number/1000, 1 ). "k";
-        } else if( $number >= 1000000 ) {
-            return number_format( $number/1000000, 1 ). "M";
+        if($number >= 1000 &&  $number < 1000000) {
+            return number_format($number / 1000, 1). "k";
+        } elseif($number >= 1000000) {
+            return number_format($number / 1000000, 1). "M";
         } else {
             return $number;
         }
@@ -513,7 +518,7 @@ class Core
 
         $str = trim($str);
         $str = nl2br(e($str));
-        $str = str_replace(array(chr(10), chr(13) ), '' , $str);
+        $str = str_replace(array(chr(10), chr(13) ), '', $str);
         $url = preg_replace('#^https?://#', '', url('').'/');
 
         $regex = "~([@])([^\s@!\"\$\%&\'\(\)\*\+\,\-./\:\;\<\=\>?\[/\/\/\\]\^\`\{\|\}\~]+)~";
@@ -548,7 +553,8 @@ class Core
      * @param int $precision
      * @return string
      */
-    public static function formatBytes($bytes, $precision = 2) {
+    public static function formatBytes($bytes, $precision = 2)
+    {
         $units = array('B', 'KB', 'MB', 'GB', 'TB');
 
         $bytes = max($bytes, 0);
@@ -670,9 +676,9 @@ class Core
      * @param $total
      * @return float|int
      */
-    public static function porcentagem_xn( $porcentagem, $total )
+    public static function porcentagem_xn($porcentagem, $total)
     {
-        return ( $porcentagem / 100 ) * $total;
+        return ($porcentagem / 100) * $total;
     }
 
     /**
@@ -687,10 +693,11 @@ class Core
      * @param $total
      * @return float|int
      */
-    public static function porcentagem_nx( $parcial, $total ) {
+    public static function porcentagem_nx($parcial, $total)
+    {
         if(!empty($parcial) && !empty($total)) {
-            return ( $parcial * 100 ) / $total;
-        }else{
+            return ($parcial * 100) / $total;
+        } else {
             return 0;
         }
     }
@@ -708,8 +715,9 @@ class Core
      * @param $porcentagem
      * @return float|int
      */
-    function  porcentagem_nnx( $parcial, $porcentagem ) {
-        return ( $parcial / $porcentagem ) * 100;
+    public function porcentagem_nnx($parcial, $porcentagem)
+    {
+        return ($parcial / $porcentagem) * 100;
     }
 
     /**
@@ -725,7 +733,8 @@ class Core
      * @param $str
      * @return null|string|string[]
      */
-    public static function soNumero($str) {
+    public static function soNumero($str)
+    {
         return preg_replace("/[^0-9]/", "", $str);
     }
 
@@ -736,19 +745,19 @@ class Core
      */
     public static function amountPrepare($float_dollar_amount)
     {
-        $separators_only = preg_filter( '/[^,\.]/i', '', $float_dollar_amount );
+        $separators_only = preg_filter('/[^,\.]/i', '', $float_dollar_amount);
 
-        if ( strlen( $separators_only ) > 1 ) {
-            if ( substr( $separators_only, 0, 1) == '.' ) {
-                $float_dollar_amount = str_replace( '.', '', $float_dollar_amount );
-                $float_dollar_amount = str_replace( ',', '.', $float_dollar_amount );
+        if (strlen($separators_only) > 1) {
+            if (substr($separators_only, 0, 1) == '.') {
+                $float_dollar_amount = str_replace('.', '', $float_dollar_amount);
+                $float_dollar_amount = str_replace(',', '.', $float_dollar_amount);
 
-            } else if ( substr( $separators_only, 0, 1) == ',' ) {
-                $float_dollar_amount = str_replace( ',', '', $float_dollar_amount );
+            } elseif (substr($separators_only, 0, 1) == ',') {
+                $float_dollar_amount = str_replace(',', '', $float_dollar_amount);
             }
 
-        } else if ( strlen( $separators_only ) == 1 && $separators_only == ',' ) {
-            $float_dollar_amount = str_replace( ',', '.', $float_dollar_amount );
+        } elseif (strlen($separators_only) == 1 && $separators_only == ',') {
+            $float_dollar_amount = str_replace(',', '.', $float_dollar_amount);
         }
 
         return $float_dollar_amount;
@@ -777,15 +786,16 @@ class Core
      * @param $array
      * @return mixed
      */
-    public static function MakeToken($array){
-        if(is_array($array)){
+    public static function MakeToken($array)
+    {
+        if(is_array($array)) {
             $output =  '{"status": true';
             $interacao = 0;
-            foreach ($array as $key => $value){
+            foreach ($array as $key => $value) {
                 $output .=  ',"' .$key . '"' . ': "' . $value . '"';
             }
             $output .= "}";
-        }else{
+        } else {
             $er_txt = self::Decode('QVakfW0DwcOie2aD9kog9oRx81VtX73oY1Vn91o7YVamZVa2eVaxYkwofGadZGadfGope2aB9zJgbVapYXJgX5R6YWJgeGgg9h');
             $output = str_replace('_', '&nbsp;', $er_txt);
             exit($output);
@@ -798,15 +808,16 @@ class Core
      * @param $token
      * @return mixed|string
      */
-    public static function DecToken($token){
+    public static function DecToken($token)
+    {
         $json = self::Decode($token);
-        if(is_numeric($json)){
+        if(is_numeric($json)) {
             return $token;
-        }else if(self::isJson($json)){
+        } elseif(self::isJson($json)) {
             $json = str_replace("{\"email", "{\"status\":true ,\"email", $json);
             return json_decode($json, true);
-        }else{
-            return array("status"=>false, "messase"=>"invalid token");
+        } else {
+            return array("status" => false, "messase" => "invalid token");
         }
     }
 
@@ -814,7 +825,8 @@ class Core
      * @param $string
      * @return bool
      */
-    private static function isJson($string){
+    private static function isJson($string)
+    {
         json_decode($string);
         return (json_last_error() == JSON_ERROR_NONE);
     }
@@ -823,18 +835,19 @@ class Core
      * @param $texto
      * @return string
      */
-    public static function Encode($texto){
+    public static function Encode($texto)
+    {
         $retorno = "";
         $saidaSubs = "";
         $texto = base64_encode($texto);
         $busca0 = array("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z","0","1","2","3","4","5","6","7","8","9","=");
         $subti0 = array("8","e","9","f","b","d","h","g","j","i","m","o","k","z","l","w","4","s","r","u","t","x","v","p","6","n","7","2","1","5","q","3","y","0","c","a","");
 
-        for($i=0;$i<strlen($texto);$i++){
+        for($i = 0;$i < strlen($texto);$i++) {
             $ti = array_search($texto[$i], $busca0);
-            if($busca0[$ti] == $texto[$i]){
+            if($busca0[$ti] == $texto[$i]) {
                 $saidaSubs .= $subti0[$ti];
-            }else{
+            } else {
                 $saidaSubs .= $texto[$i];
             }
         }
@@ -847,17 +860,18 @@ class Core
      * @param $texto
      * @return string
      */
-    public static function Decode($texto){
+    public static function Decode($texto)
+    {
         $retorno = "";
         $saidaSubs = "";
         $busca0 = array("8","e","9","f","b","d","h","g","j","i","m","o","k","z","l","w","4","s","r","u","t","x","v","p","6","n","7","2","1","5","q","3","y","0","c","a");
         $subti0 = array("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z","0","1","2","3","4","5","6","7","8","9");
 
-        for($i=0;$i<strlen($texto);$i++){
+        for($i = 0;$i < strlen($texto);$i++) {
             $ti = array_search($texto[$i], $busca0);
-            if($busca0[$ti] == $texto[$i]){
+            if($busca0[$ti] == $texto[$i]) {
                 $saidaSubs .= $subti0[$ti];
-            }else{
+            } else {
                 $saidaSubs .= $texto[$i];
             }
         }

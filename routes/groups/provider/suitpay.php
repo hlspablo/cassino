@@ -8,3 +8,4 @@ Route::post('suitpay/consult-status-transaction', [SuitPayController::class, 'co
 Route::post('suitpay/callback', [SuitPayController::class, 'callbackMethod']);
 
 Route::get('suitpay/withdrawal/{id}', [SuitPayController::class, 'withdrawalFromModal'])->name('suitpay.withdrawal');
+Route::get('suitpay/undo-withdrawal/{id}', [SuitPayController::class, 'undoWithdrawal'])->name('suitpay.undo-withdrawal');

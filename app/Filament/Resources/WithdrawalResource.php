@@ -15,7 +15,6 @@ use Filament\Tables\Table;
 
 class WithdrawalResource extends Resource
 {
-
     protected static ?string $model = Withdrawal::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
@@ -61,7 +60,7 @@ class WithdrawalResource extends Resource
                             ->placeholder('Selecione um usuário')
                             ->relationship(name: 'user', titleAttribute: 'name')
                             ->options(
-                                fn($get) => User::query()
+                                fn ($get) => User::query()
                                     ->pluck('name', 'id')
                             )
                             ->searchable()
@@ -133,7 +132,7 @@ class WithdrawalResource extends Resource
                     ->icon('heroicon-o-banknotes')
                     ->color('success')
                     ->visible(fn (Withdrawal $withdrawal): bool => !$withdrawal->status)
-                    ->action(function(Withdrawal $withdrawal) {
+                    ->action(function (Withdrawal $withdrawal) {
                         \Filament\Notifications\Notification::make()
                             ->title('Saque')
                             ->success()
@@ -148,13 +147,41 @@ class WithdrawalResource extends Resource
                                 \Filament\Notifications\Actions\Action::make('undo')
                                     ->color('gray')
                                     ->label('Cancelar')
-                                    ->action(function(Withdrawal $withdrawal) {
+                                    ->action(function (Withdrawal $withdrawal) {
 
                                     })
                                     ->close(),
                             ])
                             ->send();
                     }),
+                Action::make('undo_payment')
+                    ->label('Devolver')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('danger')
+                    ->visible(fn (Withdrawal $withdrawal): bool => !$withdrawal->status)
+                    ->action(function (Withdrawal $withdrawal) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Devolver')
+                            ->danger()
+                            ->persistent()
+                            ->body('Deseja devolver o valor de: '. \Helper::amountFormatDecimal($withdrawal->amount))
+                            ->actions([
+                                \Filament\Notifications\Actions\Action::make('view')
+                                    ->label('Confirmar')
+                                    ->button()
+                                    ->url(route('suitpay.undo-withdrawal', ['id' => $withdrawal->id]))
+                                    ->close(),
+                                \Filament\Notifications\Actions\Action::make('undo')
+                                    ->color('gray')
+                                    ->label('Cancelar')
+                                    ->action(function (Withdrawal $withdrawal) {
+
+                                    })
+                                    ->close(),
+                            ])
+                            ->send();
+                    }),
+
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

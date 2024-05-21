@@ -56,7 +56,7 @@ class SuitPayPaymentPage extends Page
                             ->placeholder('Selecione um usuário')
                             ->relationship(name: 'user', titleAttribute: 'name')
                             ->options(
-                                fn($get) => User::query()
+                                fn ($get) => User::query()
                                     ->pluck('name', 'id')
                             )
                             ->searchable()
@@ -113,20 +113,20 @@ class SuitPayPaymentPage extends Page
                 'suitpayment_id' => $suitpayment->id
             ]);
 
-            if($resp) {
+            if($resp['status']) {
                 Notification::make()
                     ->title('Saque solicitado')
-                    ->body('Saque solicitado com sucesso')
+                    ->body($resp['message'])
                     ->success()
                     ->send();
-            }else{
+            } else {
                 Notification::make()
                     ->title('Erro no saque')
-                    ->body('Erro ao solicitar o saque')
+                    ->body($resp['message'])
                     ->danger()
                     ->send();
             }
-        }else{
+        } else {
             Notification::make()
                 ->title('Erro ao salvar')
                 ->body('Erro ao salvar a requisição do saque')

@@ -16,7 +16,7 @@ use App\Filament\Resources\WalletResource;
 use App\Filament\Resources\WithdrawalResource;
 use App\Livewire\AdminWidgets;
 use App\Livewire\LatestAdminComissions;
-use App\Livewire\WalletOverview;
+use App\Filament\Widgets\PeriodFilterWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -65,9 +65,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // WalletOverview::class,
-                // AdminWidgets::class,
-                // LatestAdminComissions::class,
+                PeriodFilterWidget::class,
+                AdminWidgets::class,
+                LatestAdminComissions::class,
             ])
             ->middleware([
                 EncryptCookies::class,

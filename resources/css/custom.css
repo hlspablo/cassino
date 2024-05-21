@@ -1,0 +1,23 @@
+/* public/css/custom-admin.css */
+
+input.custom-input[type="date"] {
+    font-family: "Roboto", sans-serif;
+    border-radius: 20px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    background-color: #1e293b; /* Dark background color */
+    color: #fff; /* White text color */
+}
+
+input.custom-input[type="date"]::placeholder {
+    color: #a1a1aa; /* Light gray placeholder color */
+}
+
+input.custom-input[type="date"]:focus {
+    outline: none;
+    border-color: #3b82f6; /* Blue border on focus */
+}
+
+label {
+    color: white; /* Ensuring labels are also visible */
+}

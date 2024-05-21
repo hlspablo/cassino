@@ -26,10 +26,11 @@
                     </span>
                     <input type="number" name="amount" required min="{{ config('setting')->min_deposit }}" max="{{ config('setting')->max_deposit }}" class="form-control" placeholder="0,00">
                 </div>
-                <div class="input-group mb-3">
-                    <span class="input-group-text" id="password"><i class="fa-light fa-address-card text-success-emphasis"></i></span>
-                    <input type="text" name="cpf" class="form-control cpf" required placeholder="DIGITE SEU CPF">
-                </div>
+                @if(!empty(auth()->user()) && !auth()->user()->is_demo_agent)
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="password"><i class="fa-light fa-address-card text-success-emphasis"></i></span>
+                        <input type="text" name="cpf" class="form-control cpf" required placeholder="DIGITE SEU CPF">
+                    </div>
                 <div class="row justify-between list-amount">
                     @php $amount = config('setting')->min_deposit @endphp
                     @for($i = 0; $i < 6; $i++)
@@ -39,9 +40,11 @@
                         @php $amount = $amount * 2 @endphp
                     @endfor
                 </div>
+
+                @endif
                 <div class="d-grid mt-3">
                     <button type="submit" class="btn-primary-theme btn-block w-full mb-3">
-                        GERAR QRCODE
+                        @if(!empty(auth()->user()) && !auth()->user()->is_demo_agent) GERAR QRCODE @else ENVIAR @endif
                     </button>
                 </div>
             </form>
@@ -158,6 +161,26 @@
                 .then(response => response.json())
                 .then(data => {
                     if(data.status) {
+                        if(data.status == 'CLOSE') {
+                        iziToast.show({
+                            title: 'Sucesso',
+                            message: 'Deposito feito com sucesso',
+                            theme: 'dark',
+                            icon: 'fa-solid fa-check',
+                            iconColor: '#ffffff',
+                            backgroundColor: '#23ab0e',
+                            position: 'topRight',
+                            timeout: 1500,
+                            onClosing: function () {},
+                            onClosed: function () {
+                                $("#deposit-modal").iziModal('close');
+                                setTimeout(function() {
+                                    window.location.replace('{{ route('panel.wallet.deposits') }}');
+                                }, 1000);
+                            }
+                        });
+                        return;
+                        }
                         var divQrcode = document.getElementById('qrcode-container');
                         divQrcode.style.display = 'block';
 
@@ -178,23 +201,6 @@
                             consultStatusTransaction(data.idTransaction);
                         }, 5000);
 
-                        {{--iziToast.show({--}}
-                        {{--    title: 'Sucesso',--}}
-                        {{--    message: 'Deposito feito com sucesso',--}}
-                        {{--    theme: 'dark',--}}
-                        {{--    icon: 'fa-solid fa-check',--}}
-                        {{--    iconColor: '#ffffff',--}}
-                        {{--    backgroundColor: '#23ab0e',--}}
-                        {{--    position: 'topRight',--}}
-                        {{--    timeout: 1500,--}}
-                        {{--    onClosing: function () {},--}}
-                        {{--    onClosed: function () {--}}
-                        {{--        $("#deposit-modal").iziModal('close');--}}
-                        {{--        setTimeout(function() {--}}
-                        {{--            window.location.replace('{{ route('panel.wallet.deposits') }}');--}}
-                        {{--        }, 1000);--}}
-                        {{--    }--}}
-                        {{--});--}}
                     }else{
                         if(data.error != undefined) {
                             iziToast.show({

@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\GameExclusive;
-use App\Traits\Providers\SlotegratorTrait;
+// use App\Traits\Providers\SlotegratorTrait;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    use SlotegratorTrait;
+    // use SlotegratorTrait;
 
     /**
      * Display a listing of the resource.
@@ -23,19 +23,20 @@ class GameController extends Controller
             if(auth()->check()) {
 
                 $token = '';
-                $time = time()-34;
+                $time = time() - 34;
 
-                // FORCANDO A PESSOA IR TELA BANIDO
-                if(auth()->user()->banned) return redirect()->to('/banned');
+                if(auth()->user()->banned) {
+                    return redirect()->to('/banned');
+                }
 
-                $token = hash('sha256','md5 cassino'.md5(auth()->user()->email.'-'.time()));
-                \DB::table('users')->where('email',auth()->user()->email)->update(array('token_time' => $time,'token' => $token,'logged_in' => 0));
+                $token = hash('sha256', 'md5 cassino'.md5(auth()->user()->email.'-'.time()));
+                \DB::table('users')->where('email', auth()->user()->email)->update(array('token_time' => $time,'token' => $token,'logged_in' => 0));
 
                 $gameProvider = null;
 
-                if($game->provider_service == 'slotegrator') {
-                    $gameProvider = $this->startGameSlotegrator($game->uuid);
-                }
+                // if($game->provider_service == 'slotegrator') {
+                //     $gameProvider = $this->startGameSlotegrator($game->uuid);
+                // }
 
                 if(!empty($gameProvider) && $gameProvider['status']) {
                     $game->increment('views', 1);
@@ -44,10 +45,10 @@ class GameController extends Controller
                         'game' => $game,
                         'gameUrl' => $gameProvider['game_url'],
                     ]);
-                }else{
+                } else {
                     return back()->with($gameProvider);
                 }
-            }else{
+            } else {
                 return redirect()->to('/?action=login');
             }
         }
