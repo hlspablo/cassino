@@ -49,6 +49,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->globalSearch(false)
             ->colors([
                 'danger' => Color::Red,
                 'gray' => Color::Slate,
@@ -131,6 +132,13 @@ class AdminPanelProvider extends PanelProvider
                     ,
 
                     auth()->user()->hasRole('admin') ?
+                        NavigationGroup::make('Informações')
+                            ->items([
+                                ...OrderResource::getNavigationItems(),
+                            ])
+                        : NavigationGroup::make(),
+
+                    auth()->user()->hasRole('admin') ?
                         NavigationGroup::make(__(config('filament-spatie-roles-permissions.navigation_section_group', 'filament-spatie-roles-permissions::filament-spatie.section.roles_and_permissions')))
                             ->items([
                                 NavigationItem::make(__('filament-spatie-roles-permissions::filament-spatie.section.role'))
@@ -151,13 +159,6 @@ class AdminPanelProvider extends PanelProvider
                                         'filament.admin.resources.permissions.edit',
                                     ]))
                                     ->url(fn (): string => '/admin/permissions'),
-                            ])
-                        : NavigationGroup::make(),
-
-                    auth()->user()->hasRole('admin') ?
-                        NavigationGroup::make('Informações')
-                            ->items([
-                                ...OrderResource::getNavigationItems(),
                             ])
                         : NavigationGroup::make(),
 

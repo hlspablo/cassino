@@ -61,7 +61,7 @@ class DepositResource extends Resource
                         ->placeholder('Selecione um usuário')
                         ->relationship(name: 'users', titleAttribute: 'name')
                         ->options(
-                            fn($get) => User::query()
+                            fn ($get) => User::query()
                                 ->pluck('name', 'id')
                         )
                         ->searchable()
@@ -76,12 +76,6 @@ class DepositResource extends Resource
                         ->label('Tipo')
                         ->required()
                         ->maxLength(191),
-                    Forms\Components\FileUpload::make('proof')
-                        ->label('Comprovante')
-                        ->placeholder('Carregue a imagem do comprovante')
-                        ->image()
-                        ->columnSpanFull()
-                        ->required(),
                     Forms\Components\Toggle::make('status')
                         ->required(),
                 ])
@@ -96,25 +90,19 @@ class DepositResource extends Resource
                 Tables\Columns\TextColumn::make('user.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('amount')
+            Tables\Columns\TextColumn::make('amount')
+                    ->formatStateUsing(fn (string $state): string => \Helper::amountFormatDecimal($state))
                     ->label('Valor')
-                    ->money('BRL')
-                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('type')
                     ->label('Tipo')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('proof')
-                    ->searchable(),
                 Tables\Columns\IconColumn::make('status')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
+            Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

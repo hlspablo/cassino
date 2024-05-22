@@ -103,20 +103,6 @@
                         </div>
                         <p>Novo no <?php echo e(getenv('APP_NAME')); ?>? <a href="" onclick="openRegister(event)"><strong>Criar conta</strong></a></p>
                     </form>
-
-                    <div class="login-wrap">
-                        <div class="line-text">
-                            <div class="l"></div>
-                            <div class="t">Faça login diretamente com</div>
-                            <div class="l"></div>
-                        </div>
-
-                        <div class="social-group">
-                            <a href="<?php echo e(url('/auth/redirect/google')); ?>" class="login-with-google-btn w-full" >
-                                Logar com o Google
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

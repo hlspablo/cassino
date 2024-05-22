@@ -96,7 +96,7 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-8 col-sm-12 mb-3">
-                        <input type="text" name="chave_pix" class="form-control" required placeholder="DIGITE SUA CHAVE PIX">
+                        <input type="text" name="chave_pix" class="form-control" required placeholder="Chave Pix (Sem Pontos ou Traços)">
                     </div>
                     <div class="col-lg-4 col-sm-12 mb-3">
                         <select name="tipo_chave" class="form-select " required aria-label="Tipo de chave">

@@ -67,19 +67,21 @@ class WithdrawalResource extends Resource
                             ->preload()
                             ->live()
                             ->required(),
+                        Forms\Components\TextInput::make('chave_pix')
+                            ->label('Chave Pix')
+                            ->required()
+                            ->default(0.00),
                         Forms\Components\TextInput::make('amount')
                             ->label('Valor')
                             ->required()
                             ->default(0.00),
-                        Forms\Components\TextInput::make('type')
+                    Forms\Components\Select::make('type')
+                            ->options([
+                                'document' => 'CPF/CNPJ',
+                                'phoneNumber' => 'Telefone',
+                                'randomKey' => 'Chave Aleatória',
+                                ])
                             ->label('Tipo')
-                            ->required()
-                            ->maxLength(191),
-                        Forms\Components\FileUpload::make('proof')
-                            ->label('Comprovante')
-                            ->placeholder('Carregue a imagem do comprovante')
-                            ->image()
-                            ->columnSpanFull()
                             ->required(),
                         Forms\Components\Toggle::make('status')
                             ->required(),
@@ -108,10 +110,10 @@ class WithdrawalResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('chave_pix')
                     ->label('Chave Pix'),
-                Tables\Columns\TextColumn::make('proof')
-                    ->label('Comprovante')
-                    ->html()
-                    ->formatStateUsing(fn (string $state): string => '<a href="'.url('storage/'.$state).'" target="_blank">Baixar</a>'),
+                // Tables\Columns\TextColumn::make('proof')
+                //     ->label('Comprovante')
+                //     ->html()
+                //     ->formatStateUsing(fn (string $state): string => '<a href="'.url('storage/'.$state).'" target="_blank">Baixar</a>'),
                 Tables\Columns\IconColumn::make('status')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -155,7 +157,7 @@ class WithdrawalResource extends Resource
                             ->send();
                     }),
                 Action::make('undo_payment')
-                    ->label('Devolver')
+                    ->label('Devolver Saldo')
                     ->icon('heroicon-o-banknotes')
                     ->color('danger')
                     ->visible(fn (Withdrawal $withdrawal): bool => !$withdrawal->status)

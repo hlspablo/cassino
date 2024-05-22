@@ -11,6 +11,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
+use App\Models\GameExclusive;
 use Filament\Support\Exceptions\Halt;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Cache;
@@ -53,7 +54,7 @@ class Settings extends Page implements HasForms
     {
         return $form
             ->schema([
-                Section::make('Detalhes do Site')
+                Section::make('Detalhes')
                     ->schema([
                         TextInput::make('software_name')
                             ->label('Nome')
@@ -62,16 +63,27 @@ class Settings extends Page implements HasForms
                         TextInput::make('software_description')
                             ->label('Descrição')
                             ->maxLength(191),
+                        Select::make('game_level')
+                            ->label('Dificuldade de Ganhar')
+                            ->default('medium')
+                            ->selectablePlaceholder(false)
+                            ->options([
+                                'custom' => 'Customizada',
+                                'pay' => 'Pagando',
+                                'medium' => 'Balanceada',
+                                'hard' => 'Difícil',
+                            ]),
+
+
+                    ])->columns(2),
+                Section::make('Visual')
+                    ->schema([
                         FileUpload::make('software_logo_white')
                             ->label('Logo')
                             ->placeholder('Carregue a logo do seu cassino')
                             ->directory('logos')
                             ->disk('public')
                             ->image(),
-
-                    ])->columns(2),
-                Section::make('Promoções')
-                    ->schema([
                         FileUpload::make('promo_banner')
                             ->label('Banner Promocional (1920x540)')
                             ->placeholder('Clique para selecionar')
@@ -84,7 +96,7 @@ class Settings extends Page implements HasForms
                         TextInput::make('promo_text')
                             ->label('Texto Promocional')
                             ->maxLength(191),
-                    ])->columns(1),
+                    ])->columns(2),
                 Section::make('Depósitos e Saques')
                     ->schema([
                         TextInput::make('min_deposit')
@@ -103,21 +115,30 @@ class Settings extends Page implements HasForms
                             ->label('Max Saque')
                             ->numeric()
                             ->maxLength(191),
+                        TextInput::make('initial_bonus')
+                            ->label('Bônus Primeiro Depósito (%)')
+                            ->numeric()
+                            ->suffix('%')
+                            ->maxLength(191),
+                        TextInput::make('min_rollover')
+                            ->label('Gasto Mínimo para Saque')
+                            ->numeric()
+                            ->maxLength(191),
                     ])->columns(4),
-                Section::make('Taxas')
-                    ->description('Configurações de Ganhos da Plataforma')
-                    ->schema([
-                        TextInput::make('revshare_percentage')
-                            ->label('RevShare (%)')
-                            ->numeric()
-                            ->suffix('%')
-                            ->maxLength(191),
-                        TextInput::make('ngr_percent')
-                            ->label('NGR (%)')
-                            ->numeric()
-                            ->suffix('%')
-                            ->maxLength(191),
-                    ])->columns(3),
+                // Section::make('Taxas')
+                //     ->description('Configurações de Ganhos da Plataforma')
+                //     ->schema([
+                //         TextInput::make('revshare_percentage')
+                //             ->label('RevShare (%)')
+                //             ->numeric()
+                //             ->suffix('%')
+                //             ->maxLength(191),
+                //         TextInput::make('ngr_percent')
+                //             ->label('NGR (%)')
+                //             ->numeric()
+                //             ->suffix('%')
+                //             ->maxLength(191),
+                //     ])->columns(3),
 
                 Section::make('Social')
                     ->description('Redes Sociais')
@@ -131,24 +152,6 @@ class Settings extends Page implements HasForms
                             ->placeholder('Digite o número de Whatsapp')
                             ->maxLength(191),
                     ])->columns(2),
-                Section::make('Dados Gerais')
-                    ->schema([
-                        TextInput::make('initial_bonus')
-                            ->label('Bônus Inicial (%)')
-                            ->numeric()
-                            ->suffix('%')
-                            ->maxLength(191),
-                        TextInput::make('currency_code')
-                            ->label('Moeda')
-                            ->maxLength(191),
-                        Select::make('decimal_format')->options([
-                            'dot' => 'Dot',
-                        ]),
-                        Select::make('currency_position')->options([
-                            'left' => 'Left',
-                            'right' => 'Right',
-                        ]),
-                    ])->columns(4),
                 Section::make('SMTP')
                     ->description('Ajustes de credenciais para a SMTP')
                     ->schema([
@@ -185,24 +188,24 @@ class Settings extends Page implements HasForms
                             ->placeholder('Digite o nome de Cabeçalho')
                             ->maxLength(191)
                     ])->columns(4),
-                Section::make('Slotegrator API')
-                    ->description('Ajustes de credenciais para a Slotegrator')
-                    ->schema([
-                        TextInput::make('merchant_url')
-                            ->label('Merchant URL')
-                            ->placeholder('Digite aqui a URL da API')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                        TextInput::make('merchant_id')
-                            ->label('Merchant ID')
-                            ->placeholder('Digite aqui a Merchant ID')
-                            ->maxLength(191),
-                        TextInput::make('merchant_key')
-                            ->placeholder('Digite aqui a Merchant Key')
-                            ->label('Merchant Key')
-                            ->maxLength(191),
-                    ])
-                    ->columns(2),
+                // Section::make('Slotegrator API')
+                //     ->description('Ajustes de credenciais para a Slotegrator')
+                //     ->schema([
+                //         TextInput::make('merchant_url')
+                //             ->label('Merchant URL')
+                //             ->placeholder('Digite aqui a URL da API')
+                //             ->maxLength(191)
+                //             ->columnSpanFull(),
+                //         TextInput::make('merchant_id')
+                //             ->label('Merchant ID')
+                //             ->placeholder('Digite aqui a Merchant ID')
+                //             ->maxLength(191),
+                //         TextInput::make('merchant_key')
+                //             ->placeholder('Digite aqui a Merchant Key')
+                //             ->label('Merchant Key')
+                //             ->maxLength(191),
+                //     ])
+                //     ->columns(2),
                 Section::make('Suitpay')
                     ->description('Ajustes de credenciais para a Suitpay')
                     ->schema([
@@ -226,6 +229,102 @@ class Settings extends Page implements HasForms
             ->statePath('data');
     }
 
+
+    protected function setGameLevel()
+    {
+
+        if (isset($this->data['game_level']) && $this->data['game_level'] == 'custom') {
+            return;
+        }
+
+        $this->setting->game_level = $this->data['game_level'];
+
+        $uuids = [
+            'fortunetiger',
+            'fortuneox',
+            'fortunemouse',
+            'fortunepanda',
+            'phoenixrises',
+            'queenofbounty',
+            'treasuresofaztec',
+            'bikiniparadise',
+            'hoodvswoolf',
+            'jackfrost',
+            'songkranparty',
+            'fortunerabbit'
+
+        ];
+
+        $min_max = [
+            [14,36], // fortunetiger
+            [7,36], // fortuneox
+            [14,72], // fortunemouse
+            [7,36], // fortunepanda
+            [14,36], // phoenixrises
+            [1,999], // queenofbounty
+            [1,999], // treasuresofaztec
+            [7,36], // bikiniparadise
+            [14,36], // hoodvswoolf
+            [14,36], // jackfrost
+            [7,36], // songkranparty
+            [14,36], // fortunerabbit
+        ];
+
+        $probabilities = [
+            'custom' => 0.025,
+            'pay' => 0.08,
+            'medium' => 0.05,
+            'hard' => 0.025
+        ];
+
+        if (isset($this->data['game_level']) && isset($probabilities[$this->data['game_level']])) {
+            $targetProbability = $probabilities[$this->data['game_level']];
+        } else {
+            // Handle case where game level is not found in the probabilities array
+            $targetProbability = 0.025; // Default value or handle error
+        }
+
+        $new_min_max = array_map(function ($pair) use ($targetProbability) {
+            return $this->findClosestMinMax($pair[0], $pair[1], $targetProbability);
+        }, $min_max);
+
+        // Map UUIDs to their new min and max values
+        $uuid_to_min_max = array_combine($uuids, $new_min_max);
+
+        // Update each GameExclusive model
+        foreach ($uuid_to_min_max as $uuid => $values) {
+            [$winLength, $loseLength] = $values;
+
+            GameExclusive::where('uuid', $uuid)->update([
+                'winLength' => $winLength,
+                'loseLength' => $loseLength,
+            ]);
+        }
+
+    }
+
+    protected function findClosestMinMax($minRange, $maxRange, $targetProbability)
+    {
+        $closestMin = $minRange;
+        $closestMax = $maxRange;
+        $closestDifference = PHP_FLOAT_MAX;
+
+        for ($max = 1; $max <= $maxRange; $max++) {
+            $min = round($max * $targetProbability);
+            if ($min <= $minRange && $min >= 1) {
+                $currentProbability = $min / $max;
+                $difference = abs($currentProbability - $targetProbability);
+
+                if ($difference < $closestDifference) {
+                    $closestMin = $min;
+                    $closestMax = $max;
+                    $closestDifference = $difference;
+                }
+            }
+        }
+
+        return [$closestMin, $closestMax];
+    }
 
     /**
      * @return void
@@ -287,6 +386,7 @@ class Settings extends Page implements HasForms
 
                 if($setting->save()) {
                     Cache::put('setting', $setting);
+                    $this->setGameLevel();
 
                     Notification::make()
                         ->title('Dados alterados')

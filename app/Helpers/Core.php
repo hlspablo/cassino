@@ -165,7 +165,7 @@ class Core
      */
     public static function generateGameHistory(User $user, $type, $amount, $bet, $nameGame, $gameId, $changeBonus)
     {
-        /// pagar afiliado
+        // Pay Affiliate
         if($type == 'loss' && !empty($user->inviter)) {
             $setting = \Helper::getSetting();
             $affiliate = User::find($user->inviter);
@@ -178,14 +178,18 @@ class Core
                     ->first();
 
                 if(!empty($affHistoryRevshare)) {
-                    $comission = \Helper::porcentagem_xn($affiliate->affiliate_revenue_share, $bet);
-                    $ngr_discount = \Helper::porcentagem_xn($setting->ngr_percent, $comission);
+                    if($affiliate->affiliate_revenue_share > 0) {
 
-                    $commissionPay = ($comission - $ngr_discount);
-                    $affHistoryRevshare->increment('losses', 1);
-                    $affHistoryRevshare->increment('losses_amount', $commissionPay);
+                        $comission = \Helper::porcentagem_xn($affiliate->affiliate_revenue_share, $bet);
 
-                    $affiliate->wallet->increment('refer_rewards', $commissionPay);
+                        // does not apply to vgames
+                        // $ngr_discount = \Helper::porcentagem_xn($setting->ngr_percent, $comission);
+                        // $commissionPay = ($comission - $ngr_discount);
+                        $affHistoryRevshare->increment('losses', 1);
+                        $affHistoryRevshare->increment('losses_amount', $commission);
+
+                        $affiliate->wallet->increment('refer_rewards', $commission);
+                    }
                 }
             }
         }

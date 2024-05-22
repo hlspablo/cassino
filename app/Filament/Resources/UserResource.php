@@ -74,13 +74,13 @@ class UserResource extends Resource
                     ->isActiveWhen(function () {
                         return request()->routeIs(static::getRouteBaseName() . '.edit');
                     }),
-                //PageNavigationItem::make(__('base.change_password'))
-                   // ->translateLabel()
-                   // ->url(static::getUrl('password.change', ['record' => $record->id]))
-                    //->icon('heroicon-o-key')
-                    //->isActiveWhen(function () {
-                  //      return request()->routeIs(static::getRouteBaseName() . '.password.change');
-                  //  }),
+                PageNavigationItem::make(__('base.change_password'))
+                   ->translateLabel()
+                   ->url(static::getUrl('password.change', ['record' => $record->id]))
+                    ->icon('heroicon-o-key')
+                    ->isActiveWhen(function () {
+                        return request()->routeIs(static::getRouteBaseName() . '.password.change');
+                    }),
 
             ]);
     }
@@ -105,8 +105,14 @@ class UserResource extends Resource
                             ->email()
                             ->required()
                             ->maxLength(191),
-                        Forms\Components\DateTimePicker::make('email_verified_at')
-                            ->label('Verificação E-mail'),
+                    Forms\Components\TextInput::make('affiliate_baseline')
+                            ->numeric()
+                            ->label('Baseline')
+                            ->required()
+                            ->maxLength(191),
+                        Forms\Components\Toggle::make('is_demo_agent')
+                            ->label('Influencer')
+                            ->columnSpanFull()
                     ]),
                 Forms\Components\Section::make()
                     ->schema([
@@ -120,10 +126,7 @@ class UserResource extends Resource
                             ->required()
                             ->numeric()
                             ->default(0),
-                        Forms\Components\Toggle::make('is_demo_agent')
-                            ->label('Influencer')
-                            ->columnSpanFull()
-                        ,
+
                     ])->columns(2)
             ]);
     }
@@ -149,8 +152,18 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable(),
+                        ->label('Criado em')
+                        ->dateTime()
+                        ->sortable(),
+                Tables\Columns\TextColumn::make('affiliate_baseline')
+                        ->label('Baseline')
+                    ->money('BRL'),
+                Tables\Columns\TextColumn::make('affiliate_revenue_share')
+                    ->label('Revenue Share (%)'),
+                Tables\Columns\TextColumn::make('affiliate_cpa')
+                        ->label('CPA'),
+                Tables\Columns\BooleanColumn::make('is_demo_agent')
+                        ->label('Influencer?'),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()

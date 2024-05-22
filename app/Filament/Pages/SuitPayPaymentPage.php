@@ -73,6 +73,7 @@ class SuitPayPaymentPage extends Page
                             ->options([
                                 'document' => 'Documento',
                                 'phoneNumber' => 'Telefone',
+                                'email' => 'E-mail',
                                 'randomKey' => 'Chave aleatória',
                                 'paymentCode' => 'Código de pagamento',
                             ]),

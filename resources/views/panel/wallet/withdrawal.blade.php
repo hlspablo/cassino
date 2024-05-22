@@ -48,8 +48,10 @@
                                                 <td>
                                                     @if($withdrawal->status == 0)
                                                         <span class="badge bg-warning text-dark">Pendente</span>
-                                                    @else
+                                                    @elseif($withdrawal->status == 1)
                                                         <span class="badge bg-success">Confirmado</span>
+                                                    @else($withdrawal->status == 2)
+                                                        <span class="badge bg-info text-dark">Devolvido</span>
                                                     @endif
                                                 </td>
                                                 <td>{{ $withdrawal->dateHumanReadable }}</td>

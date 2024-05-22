@@ -13,10 +13,13 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Exceptions\Halt;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
-class ChangePasswordUser extends Page implements  HasForms
+class ChangePasswordUser extends Page implements HasForms
 {
-    use HasPageSidebar, InteractsWithForms;
+    use HasPageSidebar;
+    use InteractsWithForms;
 
     public User $record;
     public ?array $data = [];
@@ -40,26 +43,36 @@ class ChangePasswordUser extends Page implements  HasForms
      * @param Form $form
      * @return Form
      */
-//    public function form(Form $form): Form
-//    {
-//        return $form
-//            ->schema($this->getFormSchema())
-//            ->statePath('data');
-//    }
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema($this->getFormSchema())
+            ->statePath('data');
+    }
 
     public function save()
     {
+        $this->validate();
+        $data = $this->data['data'];
+
         try {
             $user = User::find($this->record->id);
+            $user->update([
+                    'password' => Hash::make($data['password']),
+                ]);
 
-            //$user->update(['password' => $this->data['password']]);
             Notification::make()
                 ->title('Senha Alterada')
                 ->body('A senha foi alterada com sucesso!')
                 ->success()
                 ->send();
+
         } catch (Halt $exception) {
-            return;
+            Notification::make()
+             ->title('Erro')
+             ->body('Ocorreu um erro ao alterar a senha.')
+             ->danger()
+             ->send();
         }
     }
 
@@ -82,7 +95,7 @@ class ChangePasswordUser extends Page implements  HasForms
                         ->label('Confirme Senha')
                         ->placeholder('Confirme sua senha')
                         ->password()
-                        ->confirmed()
+                        ->same('password')
                         ->maxLength(191),
                 ])
                 ->columns(2)

@@ -63,12 +63,14 @@ class Setting extends Model
         'kscinus_pvt_key',
         'kscinus_pub_key',
 
-        //social
+        // new
         'instagram',
         'whatsapp',
         'promo_banner',
         'promo_text',
         'promo_link',
+        'min_rollover',
+        'game_level'
     ];
 
     protected $hidden = array('created_at', 'updated_at');

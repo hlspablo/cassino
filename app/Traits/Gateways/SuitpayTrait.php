@@ -146,10 +146,9 @@ trait SuitpayTrait
 
             $wallet = Wallet::where('user_id', $transaction->user_id)->first();
             if(!empty($wallet)) {
-                /// verifica se é o primeiro deposito
                 $checkTransactions = Transaction::where('user_id', $transaction->user_id)->count();
                 if($checkTransactions <= 1) {
-                    /// pagar o bonus
+                    // First deposit Bonus
                     $bonus = \Helper::porcentagem_xn($setting->initial_bonus, $transaction->price);
                     $wallet->increment('balance_bonus', $bonus);
                 }
@@ -161,9 +160,7 @@ trait SuitpayTrait
                         $deposit = Deposit::where('payment_id', $idTransaction)->where('status', 0)->lockForUpdate()->first();
                         if(!empty($deposit)) {
 
-                            /// verificar se existe sponsor
                             $affHistories = AffiliateHistory::where('user_id', $transaction->user_id)
-                                //->where('commission_type', 'revshare')
                                 ->where('deposited', 0)
                                 ->where('status', 0)
                                 ->lockForUpdate()
@@ -175,7 +172,7 @@ trait SuitpayTrait
                                 }
                             }
 
-                            /// fazer o deposito em cpa
+                            // send CPA to Affiliate
                             $affHistoryCPA = AffiliateHistory::where('user_id', $transaction->user_id)
                                 ->where('commission_type', 'cpa')
                                 ->where('deposited', 1)
@@ -293,12 +290,24 @@ trait SuitpayTrait
             return ['status' => false, 'message' => 'Chave Pix não encontrada'];
         }
 
+        if($responseData['response'] == 'ACCOUNT_DOCUMENTS_NOT_VALIDATED') {
+            return ['status' => false, 'message' => 'Conta SuitPay não validada'];
+        }
+
+        if($responseData['response'] == 'DOCUMENT_VALIDATE') {
+            return ['status' => false, 'message' => 'Chave Pix não pertence ao titular da conta'];
+        }
+
         if($responseData['response'] == 'NO_FUNDS') {
             return ['status' => false, 'message' => 'Saldo SuitPay Insuficiente.'];
         }
 
         if($responseData['response'] == 'UNAUTHORIZED_IP') {
             return ['status' => false, 'message' => 'IP não autorizado'];
+        }
+
+        if($responseData['response'] == 'ERROR') {
+            return ['status' => false, 'message' => 'Erro interno SuitPay'];
         }
 
         return ['status' => false, 'message' => 'Erro ao efetuar pagamento'];

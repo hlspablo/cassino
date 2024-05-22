@@ -74,65 +74,70 @@ class SuitPayController extends Controller
 
     public function undoWithdrawal($id)
     {
-        $withdrawal = Withdrawal::where('status', 0)->find($id);
-        if(!empty($withdrawal)) {
+        if(auth()->user()->hasRole('admin')) {
 
-            $user = User::where('id', $withdrawal->user_id)->first();
-            if($user) {
-                $user->wallet->increment('balance', $withdrawal->amount);
-                $withdrawal->update(['status' => 2]);
-                Notification::make()
-                    ->title('Saque devolvido')
-                    ->body('Saque devolvido com sucesso')
-                    ->success()
-                    ->send();
+            $withdrawal = Withdrawal::find($id);
+            if(!empty($withdrawal)) {
+
+                $user = User::where('id', $withdrawal->user_id)->first();
+                if($user) {
+                    $user->wallet->increment('balance', $withdrawal->amount);
+                    $withdrawal->update(['status' => 2]);
+                    Notification::make()
+                        ->title('Saque devolvido')
+                        ->body('Saque devolvido com sucesso')
+                        ->success()
+                        ->send();
+                }
+
+                return back();
             }
-
-            return back();
         }
     }
 
     // Confirmar Saque (Painel Admin)
     public function withdrawalFromModal($id)
     {
-        $withdrawal = Withdrawal::find($id);
-        if(!empty($withdrawal)) {
-            $suitpayment = SuitPayPayment::create([
-                'withdrawal_id' => $withdrawal->id,
-                'user_id'       => $withdrawal->user_id,
-                'pix_key'       => $withdrawal->chave_pix,
-                'pix_type'      => $withdrawal->tipo_chave,
-                'amount'        => $withdrawal->amount,
-                'observation'   => 'Saque direto',
-            ]);
+        if(auth()->user()->hasRole('admin')) {
+            $withdrawal = Withdrawal::find($id);
+            if(!empty($withdrawal)) {
+                $suitpayment = SuitPayPayment::create([
+                    'withdrawal_id' => $withdrawal->id,
+                    'user_id'       => $withdrawal->user_id,
+                    'pix_key'       => $withdrawal->chave_pix,
+                    'pix_type'      => $withdrawal->tipo_chave,
+                    'amount'        => $withdrawal->amount,
+                    'observation'   => 'Saque direto',
+                ]);
 
-            if($suitpayment) {
-                $parm = [
-                    'pix_key'           => $withdrawal->chave_pix,
-                    'pix_type'          => $withdrawal->tipo_chave,
-                    'amount'            => $withdrawal->amount,
-                    'suitpayment_id'    => $suitpayment->id
-                ];
+                if($suitpayment) {
+                    $parm = [
+                        'pix_key'           => $withdrawal->chave_pix,
+                        'pix_type'          => $withdrawal->tipo_chave,
+                        'amount'            => $withdrawal->amount,
+                        'suitpayment_id'    => $suitpayment->id
+                    ];
 
-                $resp = self::pixCashOut($parm);
+                    $resp = self::pixCashOut($parm);
 
-                if($resp['status']) {
-                    $withdrawal->update(['status' => 1]);
-                    Notification::make()
-                        ->title('Saque solicitado')
-                        ->body($resp['message'])
-                        ->success()
-                        ->send();
+                    if($resp['status']) {
+                        $withdrawal->update(['status' => 1]);
+                        Notification::make()
+                            ->title('Saque solicitado')
+                            ->body($resp['message'])
+                            ->success()
+                            ->send();
 
-                    return back();
-                } else {
-                    Notification::make()
-                        ->title('Erro no saque')
-                        ->body($resp['message'])
-                        ->danger()
-                        ->send();
+                        return back();
+                    } else {
+                        Notification::make()
+                            ->title('Erro no saque')
+                            ->body($resp['message'])
+                            ->danger()
+                            ->send();
 
-                    return back();
+                        return back();
+                    }
                 }
             }
         }

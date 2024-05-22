@@ -54,7 +54,7 @@ class WalletResource extends Resource
                             ->placeholder('Selecione um usuário')
                             ->relationship(name: 'user', titleAttribute: 'name')
                             ->options(
-                                fn($get) => User::query()
+                                fn ($get) => User::query()
                                     ->pluck('name', 'id')
                             )
                             ->searchable()
@@ -67,44 +67,20 @@ class WalletResource extends Resource
                         Forms\Components\TextInput::make('balance')
                             ->required()
                             ->numeric()
+                            ->label('Saldo')
                             ->default(0.00),
                         Forms\Components\TextInput::make('balance_bonus')
                             ->required()
                             ->numeric()
-                            ->default(0.00),
-                        Forms\Components\TextInput::make('anti_bot')
-                            ->required()
-                            ->numeric()
-                            ->default(0.00),
-                        Forms\Components\TextInput::make('total_bet')
-                            ->required()
-                            ->numeric()
+                            ->label('Bônus')
                             ->default(0.00),
                         Forms\Components\TextInput::make('refer_rewards')
                             ->required()
                             ->numeric()
+                            ->label('Comissão')
                             ->default(0.00),
-                        ])->columns(4),
+                        ])->columns(2),
 
-                Forms\Components\Section::make()
-                    ->schema([
-                        Forms\Components\TextInput::make('total_won')
-                            ->required()
-                            ->numeric()
-                            ->default(0),
-                        Forms\Components\TextInput::make('total_lose')
-                            ->required()
-                            ->numeric()
-                            ->default(0),
-                        Forms\Components\TextInput::make('last_won')
-                            ->required()
-                            ->numeric()
-                            ->default(0),
-                        Forms\Components\TextInput::make('last_lose')
-                            ->required()
-                            ->numeric()
-                            ->default(0),
-                    ])->columns(4),
             ]);
     }
 
@@ -119,74 +95,21 @@ class WalletResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
+                    ->label('Usuário')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('balance')
                     ->formatStateUsing(fn (string $state): string => \Helper::amountFormatDecimal($state))
+                    ->label('Saldo')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('balance_bonus')
                     ->formatStateUsing(fn (string $state): string => \Helper::amountFormatDecimal($state))
+                    ->label('Bônus')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('anti_bot')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('total_bet')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('total_won')
-                    ->numeric()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('total_lose')
-                    ->numeric()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('last_won')
-                    ->numeric()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('last_lose')
-                    ->numeric()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                Filter::make('created_at')
-                    ->form([
-                        DatePicker::make('created_from'),
-                        DatePicker::make('created_until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
-                            )
-                            ->when(
-                                $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
-                            );
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
 
-                        if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = 'Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
-                        }
-
-                        if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = 'Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
-                        }
-
-                        return $indicators;
-                    })
+                Tables\Columns\TextColumn::make('refer_rewards')
+                    ->formatStateUsing(fn (string $state): string => \Helper::amountFormatDecimal($state))
+                    ->label('Comissão')
+                    ->sortable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

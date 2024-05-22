@@ -40,7 +40,7 @@
                                             <td>
                                                 @if($deposit->status == 0)
                                                     <span class="badge bg-warning text-dark">Pendente</span>
-                                                @else
+                                                @elseif ($deposit->status == 1)
                                                     <span class="badge bg-success">Confirmado</span>
                                                 @endif
                                             </td>
