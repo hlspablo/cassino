@@ -233,7 +233,7 @@ class Settings extends Page implements HasForms
     protected function setGameLevel()
     {
 
-        if (isset($this->data['game_level']) && $this->data['game_level'] == 'custom') {
+        if (isset($this->data['game_level']) && $this->data['game_level'] === 'custom') {
             return;
         }
 

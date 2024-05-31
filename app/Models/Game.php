@@ -30,7 +30,6 @@ class Game extends Model
         'image',
         'type',
         'provider',
-        'provider_service',
         'technology',
         'has_lobby',
         'is_mobile',
@@ -50,7 +49,7 @@ class Game extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return HasOne
      */
     public function game_hash() : HasOne
     {

@@ -14,6 +14,12 @@ return [
     |
     */
 
+    'slotegrator' => [
+        'base_uri' => env('SLOTEGRATOR_URL', ''),
+        'merchant_id' => env('SLOTEGRATOR_MERCHANT_ID', ''),
+        'merchant_key' => env('SLOTEGRATOR_MERCHANT_KEY', ''),
+    ],
+
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
