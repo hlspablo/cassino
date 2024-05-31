@@ -6,7 +6,11 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\HigherOrderCollectionProxy;
 
+/**
+ * @property string $status
+ */
 class Order extends Model
 {
     use HasFactory;

@@ -1,17 +1,25 @@
 <?php
  namespace App\Traits\Providers;
 
+ use App\Models\Category;
  use App\Models\Game;
  use App\Models\Order;
  use App\Models\Setting;
  use App\Models\User;
  use App\Models\Wallet;
  use App\Models\WalletChange;
+ use Exception;
  use GuzzleHttp\Client;
  use GuzzleHttp\Exception\GuzzleException;
  use Illuminate\Http\JsonResponse;
  use Illuminate\Http\Response as ResponseAlias;
- use JetBrains\PhpStorm\NoReturn;
+ use Illuminate\Support\Facades\DB;
+ use Illuminate\Support\Facades\Storage;
+ use Illuminate\Support\Facades\Log;
+ use Illuminate\Support\Str;
+ use JsonException;
+ use phpDocumentor\Reflection\Types\Boolean;
+ use Symfony\Component\HttpFoundation\Response;
 
  trait SlotegratorTrait
  {
@@ -30,44 +38,105 @@
          $this->merchantKey = config('services.slotegrator.merchant_key');
      }
 
+
      /**
       * @throws GuzzleException
-      * @throws \JsonException
       */
-     public function getGames(): array
+     protected function downloadAndSaveGame($gameData): void
      {
-         $base_headers = $this->getHeaders();
+         $game = Game::where('uuid', $gameData['uuid'])->first();
+         if($game) {
+             Log::info('Game already exists: ' . $gameData['name']);
+             return;
+         }
+
+         $imageUrl = $gameData['image'];
+         if ($imageUrl) {
+             $imageContents = $this->client->get($imageUrl)->getBody()->getContents();
+             $imagePath = 'games/' . basename($imageUrl);
+             Storage::disk('public')->put($imagePath, $imageContents);
+         }
+
+         $category = $gameData['type'];
+         $categoryDb = Category::where('slug', $category)->first();
+         if(!$categoryDb) {
+             $categoryDb = Category::create([
+                    'name' => $category,
+                    'description' => 'Description',
+                    'slug' => $category
+             ]);
+         }
+
+         Game::create([
+             'uuid' => $gameData['uuid'],
+             'name' => $gameData['name'],
+             'image' => $imagePath ?? null,
+             'type' => $gameData['type'],
+             'provider' => $gameData['provider'],
+             'technology' => $gameData['technology'],
+             'has_lobby' => $gameData['has_lobby'],
+             'is_mobile' => $gameData['is_mobile'],
+             'has_freespins' => $gameData['has_freespins'],
+             'has_tables' => $gameData['has_tables'],
+             'freespin_valid_until_full_day' => $gameData['freespin_valid_until_full_day'],
+             'category_id' => $categoryDb->id
+         ]);
+     }
+
+     /**
+      * @throws GuzzleException
+      * @throws JsonException
+      */
+     public function getGames($page): void
+     {
+
          $requestParams = [
-             'expand' => 'tags,parameters,images'
+             'expand' => 'tags,parameters,images',
+             'page' => $page
          ];
 
-         $headers = array_merge($base_headers,
-             //['Content-Type' =>  'application/x-www-form-urlencoded'],
-             ['X-Sign' => $this->calculateXSign($requestParams, $base_headers)]);
+         $auth_headers = $this->getAuthHeaders($requestParams);
+
 
          $response = $this->client->get('games', [
-             'headers' => $headers,
+             'headers' => $auth_headers,
              'query' => $requestParams
          ]);
 
-         return json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+         $games = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+
+         foreach ($games['items'] as $game) {
+            $this->downloadAndSaveGame($game);
+        }
+
+         $nextPage = $games['_links']['next']['href'] ?? null;
+            if ($nextPage) {
+                $parsedUrl = parse_url($nextPage);
+                $queryParams = [];
+                if (isset($parsedUrl['query'])) {
+                    parse_str($parsedUrl['query'], $queryParams);
+                }
+                $pageNumber = $queryParams['page'] ?? null;
+
+                sleep(1.2);
+                $this->getGames($pageNumber);
+            }
      }
 
-     public function getHeaders(): array
+     public function getAuthHeaders($requestParams): array
      {
-         return [
+         $base_headers=  [
              'X-Merchant-Id' => $this->merchantId,
              'X-Timestamp' => time(),
-             'X-Nonce' => md5(uniqid(mt_rand(), true))
+             'X-Nonce' => md5(uniqid(mt_rand(), true)),
          ];
-     }
 
-     protected function calculateXSign($requestParams, $headers): string
-     {
-         $mergedParams = array_merge($requestParams, $headers);
+         $mergedParams = array_merge($requestParams, $base_headers);
          ksort($mergedParams);
          $hashString = http_build_query($mergedParams);
-         return hash_hmac('sha1', $hashString, $this->merchantKey);
+         $xsign =  hash_hmac('sha1', $hashString, $this->merchantKey);
+
+         return array_merge($base_headers, ['X-Sign' => $xsign]);
      }
 
      /**
@@ -83,151 +152,53 @@
      }
 
      /**
-      * @param string $gameuuid
+      * @param string $gameUuid
       * @return array
-      * @throws \Exception
+      * @throws Exception
+      * @throws GuzzleException
       */
-     public function startGameSlotegrator(string $gameuuid): array
+     public function startGameSlotegrator(string $gameUuid): array
      {
-         if(auth()->check()) {
-             $this->getCredentials(); // buscando as crendenciais
+         //TODO: this is inverted on test
+         //if(!auth()->check())
 
-             $url = $this->merchantUrl . 'games/init';
+//             $requestParamsDemo = [
+//                 'game_uuid' => $gameUuid,
+//                 'return_url' => url('/'),
+//                 'currency' => 'BRL',
+//                 'language' => 'pt',
+//             ];
+
 
              $requestParams = [
-                 'game_uuid' => $gameuuid,
+                 'game_uuid' => $gameUuid,
                  'player_id' => auth()->user()->id,
                  'player_name' => auth()->user()->name,
                  'email' => auth()->user()->email,
                  'return_url' => url('/'),
                  'currency' => 'EUR',
-                 'session_id' => $this->generateRandomString(),
+                 'session_id' => Str::random(25),
                  'language' => 'pt',
-                 'lobby_data' => $this->getLobby($gameuuid, false),
+                 //'lobby_data' => $this->getLobby($gameUuid, false),
              ];
 
-             $merchantId = $this->merchantId;
-             $merchantKey = $this->merchantKey;
-             $nonce = md5(uniqid(mt_rand(), true));
-             $time = time();
+             $response = $this->client->post('games/init', [
+                 'headers' => $this->getAuthHeaders($requestParams),
+                 'form_params' => $requestParams
+             ]);
 
-             $headers = [
-                 'X-Merchant-Id' => $merchantId,
-                 'X-Timestamp' => $time,
-                 'X-Nonce' => $nonce,
-             ];
 
-             $mergedParams = array_merge($requestParams, $headers);
-             ksort($mergedParams);
-             $hashString = http_build_query($mergedParams);
+         $data = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+         dd($data);
 
-             $XSign = hash_hmac('sha1', $hashString, $merchantKey);
-
-             ksort($requestParams);
-             $postdata = http_build_query($requestParams);
-
-             $ch = curl_init();
-             curl_setopt($ch, CURLOPT_URL, $url);
-             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-             curl_setopt($ch, CURLOPT_POST, 1);
-             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                 'X-Merchant-Id: '.$merchantId,
-                 'X-Timestamp: '.$time,
-                 'X-Nonce: '.$nonce,
-                 'X-Sign: '.$XSign,
-                 'Accept: application/json',
-                 'Enctype: application/x-www-form-urlencoded',
-             ));
-             curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-             $result = json_decode(curl_exec($ch));
-
-             if (curl_errno($ch)) {
-                 $error_message = curl_error($ch);
-
-                 return [
-                     'status' => false,
-                     'error' =>  $error_message
-                 ];
-             }
-
-             if(isset($result->url)) {
-                 $game_url = $result->url;
-
-                 return [
-                     'status' => true,
-                     'game_url' => $game_url
-                 ];
-             }
-             return [
-                 'status' => false,
-                 'error' =>  $result->message
-             ];
-         }
-
-         return [
-             'status' => false,
-             'error' =>  ''
-         ];
      }
 
      /**
       * @return JsonResponse
       */
-     public function selfvalidation()
+     public function selfvalidation(): void
      {
-         try{
-             $this->getCredentials(); // buscando as crendenciais
-
-             $url = $this->merchantUrl . 'self-validate';
-             $merchantId = $this->merchantId;
-             $merchantKey = $this->merchantKey;
-
-             $nonce = md5(uniqid(mt_rand(), true));
-             $time = time();
-
-             $headers = [
-                 'X-Merchant-Id' => $merchantId,
-                 'X-Timestamp' => $time,
-                 'X-Nonce' => $nonce,
-             ];
-
-             $requestParams = [];
-
-             $mergedParams = array_merge($requestParams, $headers);
-             ksort($mergedParams);
-             $hashString = http_build_query($mergedParams);
-
-             $XSign = hash_hmac('sha1', $hashString, $merchantKey);
-
-             ksort($requestParams);
-             $postdata = http_build_query($requestParams);
-
-             $ch = curl_init();
-             curl_setopt($ch, CURLOPT_URL, $url);
-             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-             curl_setopt($ch, CURLOPT_POST, 1);
-             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                 'X-Merchant-Id: '.$merchantId,
-                 'X-Timestamp: '.$time,
-                 'X-Nonce: '.$nonce,
-                 'X-Sign: '.$XSign,
-                 'Accept: application/json',
-                 'Enctype: application/x-www-form-urlencoded',
-             ));
-             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-             $curl = curl_exec($ch);
-             $response = json_decode($curl);
-
-             return response()->json([
-                 $response
-             ], 200);
-
-         } catch (\Exception $e) {
-             return response()->json(['error' => $e->getMessage()], 400);
-         }
+         //TODO: to Implement
      }
 
      /**
@@ -291,50 +262,12 @@
      }
 
      /**
-      * @param array $data
-      * @return array
-      */
-     private function sortArray(array $data): array
-     {
-         ksort($data);
-         foreach ($data as $key => $value) {
-             if (is_array($value)) {
-                 $data[$key] = $this->sortArray($value);
-             }
-         }
-         return $data;
-     }
-
-     /**
-      * @param int $length
-      * @return string
-      * @throws \Exception
-      */
-     private function generateRandomString(int $length = 10): string
-     {
-         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-         $charactersLength = strlen($characters);
-         $randomString = '';
-         for ($i = 0; $i < $length; $i++) {
-             $randomString .= $characters[random_int(0, $charactersLength - 1)];
-         }
-         return $randomString;
-     }
-
-     /**
       * @param $request
       * @return JsonResponse|void
       */
      public function webhooks($request)
      {
          try {
-             $this->getCredentials();
-
-             $headers = $request->header();
- //            \DB::table('debug')->insert(['text' => json_encode($request->header())]);
- //            \DB::table('debug')->insert(['text' => json_encode($request->all())]);
-
-             $merchantKey = $this->merchantKey;
              $headers = [
                  'X-Merchant-Id' => $request->header('X-Merchant-Id'),
                  'X-Timestamp' => $request->header('X-Timestamp'),
@@ -346,363 +279,211 @@
              ksort($mergedParams);
 
              $hashString = http_build_query($mergedParams);
-             $expectedSign = hash_hmac('sha1', $hashString, $merchantKey);
+             $expectedSign = hash_hmac('sha1', $hashString, $this->merchantKey);
              if ($XSign !== $expectedSign) {
                  return response()->json([
                      'error_code' => 'INTERNAL_ERROR',
                      'error_description' => 'Unauthorized Request'
-                 ], ResponseAlias::HTTP_OK);
+                 ], Response::HTTP_OK);
              }
 
-             $request->merge([
-                 //'amount' => floor($request->amount * 100) / 100
-                 'amount' => $request->amount
-             ]);
-
-             $walletUser = null;
-             $user = User::find($request->player_id);
-
-             if(!empty($user)) {
-                 $walletUser = Wallet::where('user_id', $user->id)->first();
+             if($request->action === 'balance') {
+                 $balance = $this->getCurrentBalance($request);
+                    return response()->json(['balance' => $balance]);
              }
 
-             if ($request->action == 'refund') {
-                 $checkTransaction = Order::where([
-                     'transaction_id' => $request->bet_transaction_id,
-                     //'round_id' => $request->round_id,
-                     'refunded' => 1,
-                 ])->count();
-             } else {
-                 $checkTransaction = Order::where([
-                     'transaction_id' => $request->transaction_id
-                 ])->count();
+             if($request->action === 'win') {
+                 $this->processWin($request);
              }
-
-             $nameGame = '';
-             if (isset($request->game_uuid)) {
-                 $game = Game::where('uuid', $request->game_uuid)->first();
-                 $nameGame = $game->name ?? '';
+             if ($request->action === 'bet') {
+                 $this->processBet($request);
+             }
+             if($request->action === 'refund') {
+                 $this->processRefund($request);
+             }
+             if($request->action === 'rollback') {
+                 $this->processRollback($request);
              }
 
 
-             $action = $request->action;
-             if ($checkTransaction == 0 && ($request->action == 'balance' || !empty($nameGame))) {
-                 if ($action == 'balance') {
-                     if (!isset($user) && empty($walletUser)) {
-                         return response()->json([
-                             'error_code' => "INTERNAL_ERROR",
-                             'error_description' => "This player doesnt exists"
-                         ], ResponseAlias::HTTP_OK);
-                     }
-
-                     $wallet = $walletUser->balance + $walletUser->balance_bonus;
-                     return response()->json([
-                         'balance' => $wallet
-                     ], ResponseAlias::HTTP_OK);
-
-                 } else if($action == 'bet') { // BET
-                     $betAmount = $request->amount;
-                     $changeBonus = false;
-                     if ($request->amount > ($walletUser->balance + $walletUser->balance_bonus)) {
-                         return response()->json([
-                             'error_code' => "INSUFFICIENT_FUNDS",
-                             'error_description' => "Not enough money to continue playing"
-                         ], ResponseAlias::HTTP_OK);
-                     }
-
-                     // VERIFICA SE O USUARIO POSSUI WALLET E POSSUI WALLET BONUS
-                     if ($request->amount > 0 && ($request->amount <= ($walletUser->balance + $walletUser->balance_bonus))) {
-
-                         $sql = [
-                             'balance' => $walletUser->balance - $betAmount,
-                             'anti_bot' => $walletUser->anti_bot + $betAmount,
-                             'total_bet' => $walletUser->total_bet + $betAmount,
-                         ];
-
-                         if ($walletUser->balance <= 0) {
-                             $sql = [
-                                 'balance_bonus' => $walletUser->balance_bonus - $betAmount
-                             ];
-                             $changeBonus = true;
-                         }
-
-                         // AQUI, SE O USUARIO TIVER WALLET INFERIOR BETAMOUNT, POREM TEM WALLET BONUS. SISTEMA PERMITE JOGAR, ESGOTANDO WALLET E BONUS
-                         if ($walletUser->balance > 0 && $walletUser->balance <= $betAmount && ($walletUser->balance_bonus - $walletUser->balance) >= $betAmount && $walletUser->balance_bonus > 0 ){
-                             $sql = [
-                                 'balance' => 0,
-                                 'balance_bonus' => $walletUser->balance_bonus - $betAmount
-                             ];
-                             $betAmount = $walletUser->balance - $betAmount;
-                             $changeBonus = true;
-                         }
-
-                         $walletUser->update($sql);
-
-                         $this->generateHistory($request, 'bet', $nameGame, $request->game_uuid, $changeBonus);
-                         $this->generateWalletChange($request, $user, $nameGame);
-                     }
-
-                     if(!empty($walletUser)) {
-                         $wallet = $walletUser->balance + $walletUser->balance_bonus;
-                         return response()->json([
-                             'balance' => ($wallet),
-                             'transaction_id' => $request->transaction_id
-                         ], ResponseAlias::HTTP_OK);
-                     }else{
-                         return response()->json([
-                             'error_code' => "INTERNAL_ERROR",
-                             'error_description' => "This player doesnt exists"
-                         ], ResponseAlias::HTTP_OK);
-                     }
-
-                 } else if($action == 'win') { // WIN
-                     $winAmount = $request->amount;
-
-                     $historyBet = Order::where([
-                             'user_id' => $request->player_id,
-                             'session_id' => $request->session_id,
-                             'game' => $nameGame,
-                             'type' => 'bet'
-                         ])
-                         ->orderBy('created_at', 'desc')
-                         ->first();
-
-                     $condition = null;
-                     if (isset($historyBet)) {
-                         $condition = $historyBet->type_money == 'balance_bonus' ? ($walletUser->balance <= 0 && $walletUser->balance_bonus >= 0) : ($walletUser->balance <= 0 && $walletUser->balance_bonus > 0);
-
-                     } else {
-                         $condition = ($walletUser->balance <= 0 && $walletUser->balance_bonus >= 0);
-                     }
-
-                     // verifica se o usuario tem wallet, caso n tenha, aumenta no bonus
-                     if ($condition) {
-                         $sql = [
-                             'balance_bonus' => $walletUser->balance_bonus + $winAmount
-                         ];
-                     } else {
-                         $sql = [
-                             'balance' => $walletUser->balance + $winAmount
-                         ];
-                     }
-
-                     $walletUser->update($sql);
-
-                     if ($historyBet) {
-                         $config = Setting::first();
-
-                         if ($request->amount <= 0 || $historyBet->amount >= $request->amount) {
-                             if ($request->amount != $historyBet->amount) {
-
-                                 $last_lose = ($request->amount > 0 && $historyBet->amount >= $request->amount) ? $request->amount : $historyBet->amount;
-                                 // AQUI VERIFICA SE TEM AFILIADO, ATRIBUI PORCETAGEM PARA referRewards, NGR
-                                 if ($user->inviter) {
-                                     $afiliado = User::find($user->inviter);
-                                     $afiliadoWallet = Wallet::where('user_id', $user->inviter)->first();
-                                     if (!empty($afiliadoWallet)) {
-
-                                         $reward = \Helper::porcentagem_xn($afiliado->affiliate_revenue_share, $last_lose);
-                                         $rewardNgr = \Helper::porcentagem_xn($config->ngr_percent, $reward);
-                                         $calcReward = ($reward - $rewardNgr);
-
- //                                        \Log::info('last lose:' . $last_lose);
- //                                        \Log::info('reward:' . $reward);
- //                                        \Log::info('calc Reward:' . $calcReward);
- //                                        \Log::info('reward Ngr:' . $rewardNgr);
- //                                        \Log::info('refer rewards:' . $afiliadoWallet->refer_rewards + $calcReward);
-
-                                         $referRewards = $afiliadoWallet->refer_rewards + $calcReward;
-                                         $afiliadoWallet->update([
-                                             'refer_rewards' => $referRewards
-                                         ]);
-                                     }
-                                 }
-
-                                 $walletUser->update([
-                                     'total_lose' => $walletUser->total_lose + $last_lose,
-                                     'last_lose' => $last_lose,
-                                     'last_won' => 0,
-                                 ]);
-
-                             }
-                         } else {
- //                            $last_won = (\Helper::amountPrepare($request->amount) - \Helper::amountPrepare($historyBet->amount));
- //
- //                            // AQUI VERIFICA SE TEM AFILIADO, ATRIBUI PORCETAGEM PARA referRewards, NGR
- //                            if ($user->inviter) {
- //                                $afiliadoWallet = Wallet::where('user_id', $user->inviter)->first();
- //                                if (!empty($afiliadoWallet)) {
- //                                    $reward = (\Helper::amountPrepare($config->ngr_percent) / 100) * $last_won;
- //
- //                                    \Log::info('Last Won:' . $last_won);
- //                                    $afiliadoWallet->update([
- //                                        'refer_rewards' => $afiliadoWallet->refer_rewards - \Helper::amountPrepare(floor($reward * 100) / 100)
- //                                    ]);
- //                                }
- //                            }
- //
- //                            $walletUser->update([
- //                                'total_won' => $walletUser->total_won + $last_won,
- //                                'last_won' => $last_won,
- //                                'last_lose' => 0,
- //                            ]);
-                         }
-                     }
-
-                     $this->generateHistory($request, 'win', $nameGame, $request->game_uuid);
-                     $this->generateWalletChange($request, $user, $nameGame, $historyBet);
-
-                     if(!empty($walletUser)) {
-                         $wallet = $walletUser->balance + $walletUser->balance_bonus;
-                         return response()->json([
-                             'balance' => $wallet,
-                             'transaction_id' => $request->transaction_id
-                         ], ResponseAlias::HTTP_OK);
-                     }else{
-                         return response()->json([
-                             'error_code' => "INTERNAL_ERROR",
-                             'error_description' => "This player doesnt exists"
-                         ], ResponseAlias::HTTP_OK);
-                     }
-
-
-                 } else if($action == 'refund') { // REFUND
-                     $walletbonus = false;
-
-                     // verifica se o usuario tem wallet, caso n tenha, aumenta no bonus
-                     if (!empty($walletUser) && $walletUser->balance <= 0 && $walletUser->balance_bonus > 0 ) {
-                         $walletbonus = true;
-                     }
-
-                     // verifica se o usuario tem wallet, caso n tenha, aumenta no bonus
-                     $checkTransactionBet = Order::where([
-                         'transaction_id' => $request->bet_transaction_id,
-                         //'round_id' => $request->round_id
-                     ])->first();
-
-                     if ($checkTransactionBet) {
-                         if ($checkTransactionBet->type == 'win') {
-                             $wallet = $walletbonus ? $walletUser->balance_bonus : $walletUser->balance;
-
-                             if ($checkTransactionBet->round_id == $request->round_id) {
-                                 if ($walletbonus) {
-                                     $wallet = $walletUser->balance_bonus - $request->amount;
-                                 } else {
-                                     $wallet = $walletUser->balance - $request->amount;
-                                 }
-                             }
-                         } else {
-                             if ($walletbonus) {
-                                 $wallet = $walletUser->balance_bonus + $request->amount;
-                             } else {
-                                 $wallet = $walletUser->balance + $request->amount;
-                             }
-                         }
-                         if ($walletbonus) {
-                             $walletUser->update([
-                                 'balance_bonus' => $wallet
-                             ]);
-                         } else {
-                             $walletUser->update([
-                                 'balance' => $wallet
-                             ]);
-                         }
-
-                         $this->generateHistory($request, 'refund', $nameGame, $request->game_uuid);
-                     }
-
-                     if ($checkTransactionBet != null) {
-                         $checkTransactionBet->update([
-                             'refunded' => 1
-                         ]);
-                     }
-
-                     if(!empty($walletUser)) {
-                         $wallet = $walletUser->balance + $walletUser->balance_bonus;
-                         return response()->json([
-                             'balance' => $wallet,
-                             'transaction_id' => $request->transaction_id
-                         ], ResponseAlias::HTTP_OK);
-                     }else{
-                         return response()->json([
-                             'error_code' => "INTERNAL_ERROR",
-                             'error_description' => "This player doesnt exists"
-                         ], ResponseAlias::HTTP_OK);
-                     }
-                 } else if($action == 'rollback') { // ROLLBACK
-                     $walletbonus = false;
-
-                     // verifica se o usuario tem wallet, caso n tenha, aumenta no bonus
-                     if ($walletUser->balance <= 0 && $walletUser->balance_bonus > 0 ) {
-                         $walletbonus = true;
-                     }
-
-                     foreach($request->rollback_transactions as $rollback) {
-                         if ($rollback['action'] == 'win') {
-                             if ($walletbonus) {
-                                 $walletUser->update([
-                                     'balance_bonus' => $walletUser->balance_bonus - $rollback['amount'],
-                                 ]);
-                             } else {
-                                 $walletUser->update([
-                                     'balance' => $walletUser->balance - $rollback['amount'],
-                                 ]);
-                             }
-                         } elseif ($rollback['action'] == 'bet') {
-                             if ($walletbonus) {
-                                 $walletUser->update([
-                                     'balance_bonus' => $walletUser->balance_bonus + $rollback['amount'],
-                                 ]);
-                             } else {
-                                 $walletUser->update([
-                                     'balance' => $walletUser->balance + $rollback['amount'],
-                                 ]);
-                             }
-                         }
-                     }
-                     $this->generateHistory($request, 'rollback', $nameGame, $request->game_uuid);
-
-                     if(!empty($walletUser)) {
-                         $wallet = $walletUser->balance + $walletUser->balance_bonus;
-                         return response()->json([
-                             'balance' => $wallet,
-                             'transaction_id' => $request->transaction_id,
-                             'rollback_transactions' => collect($request->rollback_transactions)->pluck('transaction_id')->toArray()
-                         ], ResponseAlias::HTTP_OK);
-                     }else{
-                         return response()->json([
-                             'error_code' => "INTERNAL_ERROR",
-                             'error_description' => "This player doesnt exists"
-                         ], ResponseAlias::HTTP_OK);
-                     }
-                 }
-             } else {
-                 if ($action == 'rollback') {
-                     return response()->json([
-                         'balance' => $walletUser->balance +$walletUser->balance_bonus,
-                         'transaction_id' => $request->transaction_id,
-                         'rollback_transactions' => collect($request->rollback_transactions)->pluck('transaction_id')->toArray()
-                     ], ResponseAlias::HTTP_OK);
-                 } else {
-                     if(!empty($walletUser)) {
-                         return response()->json([
-                             'balance' => $walletUser->balance + $walletUser->balance_bonus,
-                             'transaction_id' => $request->transaction_id,
-                         ], ResponseAlias::HTTP_OK);
-                     }
-
-                     return response()->json([
-                         'error_code' => "INTERNAL_ERROR",
-                         'error_description' => "This player doesnt exists"
-                     ], ResponseAlias::HTTP_OK);
-                 }
-             }
-
-         } catch (\Exception $e) {
-             \Log::info('Message error:' .  $e->getMessage());
-             \Log::info('Line error:' .  $e->getLine());
+         } catch (Exception $e) {
+             Log::info('Message error:' .  $e->getMessage());
+             Log::info('Line error:' .  $e->getLine());
              return response()->json(['error' => $e->getMessage(), 'line' => $e->getLine()], 400);
          }
+     }
+
+     protected function processRollback($request) : JsonResponse
+     {
+         DB::beginTransaction();
+         try {
+             $order = Order::find($request->transaction_id);
+             $order->status = 'rollback';
+             $order->save();
+
+             $user = User::find($request->player_id);
+
+             foreach($request->rollback_transactions as $rollback) {
+                 $rollbackOrder = Order::find($rollback['transaction_id']);
+                 $rollbackOrder->status = 'rollback';
+                 $rollbackOrder->save();
+
+                 if ($rollback['action'] === 'bet') {
+                     if ($order->type_money === 'mixed') {
+                         $user->wallet->increment('balance_bonus', $order->bonus_bet);
+                         $user->wallet->increment('balance', $order->bet);
+                     } else {
+                         $user->wallet->increment($order->type_money, $order->bet);
+                     }
+                 }
+
+                 if ($rollback['action'] === 'win') {
+                     if ($order->type_money === 'mixed') {
+                         $user->wallet->decrement('balance_bonus', $order->bonus_bet);
+                         $user->wallet->decrement('balance', $order->bet);
+                     } else {
+                         $user->wallet->decrement($order->type_money, $order->bet);
+                     }
+                 }
+
+             }
+
+             DB::commit();
+             return response()->json([
+                 'balance' => $this->getCurrentBalance($request),
+                     'transaction_id' => $request->transaction_id,
+                     'rollback_transactions' => collect($request->rollback_transactions)->pluck('transaction_id')->toArray()
+                 ]
+             );
+         } catch (Exception $e) {
+             DB::rollBack();
+             Log::info('Message error:' .  $e->getMessage());
+             Log::info('Line error:' .  $e->getLine());
+             return response()->json(['error_code' => 'INTERNAL_ERROR', 'error_description' => 'Error to process rollback']);
+         }
+     }
+
+
+     protected function processRefund($request): JsonResponse
+     {
+         DB::beginTransaction();
+         try {
+             $order = Order::find($request->transaction_id);
+             $order->status = 'refund';
+             $order->save();
+
+             $user = User::find($request->player_id);
+
+             if ($order->type_money === 'mixed') {
+                 $user->wallet->increment('balance_bonus', $order->bonus_bet);
+                 $user->wallet->increment('balance', $order->bet);
+             } else {
+                 $user->wallet->increment($order->type_money, $order->bet);
+             }
+
+             DB::commit();
+
+             return response()->json(['balance' => $this->getCurrentBalance($request), 'transaction_id' => $request->transaction_id]);
+         } catch (Exception $e) {
+             DB::rollBack();
+             Log::info('Message error:' .  $e->getMessage());
+             Log::info('Line error:' .  $e->getLine());
+             return response()->json(['error_code' => 'INTERNAL_ERROR', 'error_description' => 'Error to process refund']);
+         }
+
+         return response()->json(['status' => 'success']);
+     }
+
+     protected function consumeBalance($value, User $user): array | null
+     {
+         $wallet = $user->wallet();
+         if($wallet->balance_bonus >= $value) {
+            $wallet->decrement('balance_bonus', $value);
+            return ['balance_bonus', $value];
+         }
+
+         if($wallet->balance >= $value) {
+            $wallet->decrement('balance', $value);
+            return ['balance', $value];
+         }
+
+         $balance_bonus = $wallet->balance_bonus;
+
+         if ($balance_bonus + $wallet->balance >= $value) {
+             $wallet->balance_bonus = 0;
+             $wallet->decrement('balance', $value - $balance_bonus);
+             return ['mixed', $balance_bonus];
+         }
+         return null;
+     }
+
+     protected function getCurrentBalance($request): float
+     {
+         $user = User::find($request->player_id);
+         $user->wallet->refresh();
+         return $user->wallet->balance + $user->wallet->balance_bonus;
+     }
+
+     protected function processBet($request): JsonResponse
+     {
+            // $request->type = bet, tip, freespin
+            DB::beginTransaction();
+            try {
+                $user = User::find($request->player_id);
+                $consumeBalance = $this->consumeBalance($request->amount, $user);
+                if(!$consumeBalance) {
+                    return response()->json(['error_code' => 'INSUFFICIENT_FUNDS', 'error_description' => 'Insufficient funds']);
+                }
+                $user = User::find($request->player_id);
+                $game_name = Game::find($request->game_uuid)->name;
+                Order::create([
+                    'user_id' => $request->player_id,
+                    'session_id' => $request->session_id,
+                    'transaction_id' => $request->transaction_id,
+                    'type' => $request->type,
+                    'type_money' => $consumeBalance[0],
+                    'game_uuid' => $request->game_uuid,
+                    'game_name' => $game_name,
+                    'round_id' => $request->round_id,
+                    'bet' => $consumeBalance[0] === 'mixed' ? $request->amount - $consumeBalance[1] : $consumeBalance[1],
+                    'bonus_bet' => $consumeBalance[0] === 'mixed' ? $consumeBalance[1] : 0,
+                    // only store bonus_bet in mixed, otherwise, see the type_money and bet
+                    'status' => 'loss',
+                ]);
+                DB::commit();
+
+                return response()->json(['balance' => $this->getCurrentBalance($request), 'transaction_id' => $request->transaction_id]);
+
+            } catch (Exception $e) {
+                DB::rollBack();
+                Log::info('Message error:' .  $e->getMessage());
+                Log::info('Line error:' .  $e->getLine());
+                return response()->json(['error_code' => 'INTERNAL_ERROR', 'error_description' => 'Error to process bet']);
+            }
+
+            return response()->json(['status' => 'success']);
+     }
+
+     protected function processWin($request): JsonResponse
+     {
+         DB::beginTransaction();
+         try {
+             $user = User::find($request->player_id);
+             $order = Order::find($request->transaction_id);
+             $order->status = 'win';
+             $order->won_amount = $request->amount;
+             $order->save();
+             $user->wallet->increment('balance', $request->amount);
+
+             DB::commit();
+         } catch (Exception $e) {
+            DB::rollBack();
+            Log::info('Message error:' .  $e->getMessage());
+            Log::info('Line error:' .  $e->getLine());
+            return response()->json(['error_code' => 'INTERNAL_ERROR', 'error_description' => 'Error to process win']);
+         }
+
+         return response()->json(['status' => 'success']);
      }
 
      /**
@@ -721,7 +502,7 @@
              'transaction_id' => $request->transaction_id,
              'type' => $type,
              'type_money' => $changeBonus ? 'balance_bonus' : 'balance',
-             'amount' => floatval($request->amount),
+             'amount' => (float)$request->amount,
              'providers' => 'SloteGrator',
              'game' => $nameGame,
              'game_uuid' => $gameId,
@@ -738,79 +519,27 @@
       */
      private function generateWalletChange($request, $user, $nameGame, $historyBet = null): void
      {
-         $title = $request->action == 'bet' ? $nameGame . ' play' : $nameGame . ' win';
+         $title = $request->action === 'bet' ? $nameGame . ' play' : $nameGame . ' win';
 
          $hisBet = 0;
-         if ($historyBet != null) {
+         if ($historyBet !== null) {
              $hisBet = $historyBet->amount;
          }
 
          WalletChange::create([
              'reason' => $title,
-             'change' => $request->action == 'bet' ? -number_format($request->amount, 2, '.', '') : number_format($request->amount, 2, '.', ''),
+             'change' => $request->action === 'bet' ? -number_format($request->amount, 2, '.', '') : number_format($request->amount, 2, '.', ''),
              'value_bonus' => 0,
              'value_total' => $request->amount,
-             'value_roi' => $request->action == 'bet' ? 0 : $request->amount - $hisBet,
-             'value_entry' => $request->action == 'bet' ? $request->amount : $hisBet,
+             'value_roi' => $request->action === 'bet' ? 0 : $request->amount - $hisBet,
+             'value_entry' => $request->action === 'bet' ? $request->amount : $hisBet,
              'game' => $nameGame,
              'user' => $user->email
          ]);
      }
 
-     /**
-      * @return JsonResponse
-      */
-     public function limits()
+     public function limits(): void
      {
-         try{
-             $this->getCredentials(); // buscando as crendenciais
-
-             $url            = $this->merchantUrl . 'limits';
-             $merchantId     = $this->merchantId;
-             $merchantKey    = $this->merchantKey;
-             $nonce          = md5(uniqid(mt_rand(), true));
-             $time           = time();
-
-             $headers = [
-                 'X-Merchant-Id' => $merchantId,
-                 'X-Timestamp' => $time,
-                 'X-Nonce' => $nonce,
-             ];
-
-             $requestParams = [];
-
-             $mergedParams = array_merge($requestParams, $headers);
-             ksort($mergedParams);
-             $hashString = http_build_query($mergedParams);
-
-             $XSign = hash_hmac('sha1', $hashString, $merchantKey);
-
-             ksort($requestParams);
-             $postdata = http_build_query($requestParams);
-
-
-             $ch = curl_init();
-             curl_setopt($ch, CURLOPT_URL, $url);
-             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-             curl_setopt($ch, CURLOPT_POST, 0);
-             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                 'X-Merchant-Id: '.$merchantId,
-                 'X-Timestamp: '.$time,
-                 'X-Nonce: '.$nonce,
-                 'X-Sign: '.$XSign,
-                 'Accept: application/json',
-                 'Enctype: application/x-www-form-urlencoded',
-             ));
-             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-             $result = json_decode(curl_exec($ch));
-
-             return response()->json([
-                 'data' => $result
-             ], 200);
-
-         } catch (\Exception $e) {
-             return response()->json(['error' => $e->getMessage()], 400);
-         }
+       // TODO: Implement?
      }
  }

@@ -19,12 +19,12 @@
       * @throws GuzzleException
       * @throws \JsonException
       */
-     public function index(): \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Foundation\Application|\Illuminate\Http\Response
+     public function index(): \Illuminate\Http\JsonResponse
      {
-         $data = $this->getGames();
-         dd($data);
-         //return response()->json(['data' => $prettyData]);
-         return response($prettyData, 200, ['Content-Type' => 'application/json']);
+         $result = $this->startGameSlotegrator('d2eca6ec0cee46189bcc99620e08f844');
+         return response()->json($result);
+         //$this->generateSlugs();
+         //return response()->json(['status' => 'success']);
      }
      /**
       * Store a newly created resource in storage.

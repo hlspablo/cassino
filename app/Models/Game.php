@@ -35,6 +35,7 @@ class Game extends Model
         'is_mobile',
         'has_freespins',
         'has_tables',
+        'freespin_valid_until_full_day',
         'slug',
         'active',
         'views'
