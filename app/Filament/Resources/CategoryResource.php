@@ -63,9 +63,6 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
-                    ->size(20)
-                    ->label('Imagem'),
                 Tables\Columns\TextColumn::make('name')
                     ->sortable()
                     ->label('Nome')

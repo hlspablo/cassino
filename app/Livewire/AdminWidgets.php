@@ -15,20 +15,22 @@ class AdminWidgets extends BaseWidget
      */
     protected function getCards(): array
     {
-        $comissaoTotal      = Wallet::where('user_id', auth()->user()->id)->sum('refer_rewards');
-        $comissaoRevshare   = AffiliateHistory::where('commission_type', 'revshare')->where('status', 1)->sum('commission_paid');
-        $comissaoCPAs       = AffiliateHistory::where('commission_type', 'cpa')->where('status', 1)->sum('commission_paid');
+        $comissionTotal      = Wallet::where('user_id', auth()->user()->id)->sum('refer_rewards');
+        $comissionRevshareTotal   = AffiliateHistory::where('commission_type', 'revshare')
+            ->where('status', 1)->sum('commission_paid');
+        $comissionCpaTotal       = AffiliateHistory::where('commission_type', 'cpa')
+            ->where('status', 1)->sum('commission_paid');
 
         return [
-            Stat::make('Comissão', \Helper::amountFormatDecimal($comissaoTotal))
+            Stat::make('Comissão', \Helper::amountFormatDecimal($comissionTotal))
                 ->description('Comissão')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success'),
-            Stat::make('Comissão CPA', \Helper::amountFormatDecimal($comissaoCPAs))
+            Stat::make('Comissão CPA', \Helper::amountFormatDecimal($comissionCpaTotal))
                 ->description('Comissão Cpa')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success'),
-            Stat::make('Comissão Revshare', \Helper::amountFormatDecimal($comissaoRevshare))
+            Stat::make('Comissão Revshare', \Helper::amountFormatDecimal($comissionRevshareTotal))
                 ->description('Comissão revshare')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success'),

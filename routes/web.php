@@ -14,14 +14,10 @@ use \App\Http\Controllers\Provider\SlotegratorController;
 |
 */
 
-
 include_once(__DIR__ . '/groups/auth/login.php');
 include_once(__DIR__ . '/groups/auth/social.php');
 include_once(__DIR__ . '/groups/auth/register.php');
 
-// PROVIDERS
-include_once(__DIR__ . '/groups/provider/slotegrator.php');
-include_once(__DIR__ . '/groups/provider/pragmatic.php');
 include_once(__DIR__ . '/groups/provider/suitpay.php');
 
 Route::get('/aggregator', [SlotegratorController::class, 'webhookHandler']);
@@ -42,8 +38,6 @@ Route::middleware(['web'])
         include_once(__DIR__ . '/groups/web/home.php');
         include_once(__DIR__ . '/groups/web/game.php');
         include_once(__DIR__ . '/groups/web/category.php');
-        include_once(__DIR__ . '/groups/web/vgames.php');
-        include_once(__DIR__ . '/groups/web/kscinus.php');
     });
 
 URL::forceScheme('http');

@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Game;
-use App\Models\GameExclusive;
-use App\Models\GamesKscinus;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 
 class HomeController extends Controller
 {
@@ -18,25 +16,20 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $gamesPopulars      = Game::orderBy('views', 'desc')->whereActive(1)->limit(6)->get();
-        $games              = Game::limit(24)->whereActive(1)->get();
-        $gamesExclusives    = GameExclusive::whereActive(1)
-                            ->orderBy('views', 'desc')
-                            ->get();
-        $gamesPragmatic    = GamesKscinus::whereStatus(1)
-                            ->orderBy('views', 'desc')
-                            ->get();
+        $gamesPopulars = Game::orderBy('views', 'desc')->whereActive(1)->limit(12)->get();
+        $games = Game::limit(42)->whereActive(1)->get();
+
+        $gamesSuggestions = Game::whereActive(1)->inRandomOrder()->limit(6)->get();
 
         return view('web.home.index', [
             'gamesPopulars' => $gamesPopulars,
             'games' => $games,
-            'gamesExclusives' => $gamesExclusives,
-            'gamesPragmatic' => $gamesPragmatic,
+            'gamesSuggestions' => $gamesSuggestions
         ]);
     }
 
     /**
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
     public function banned()
     {
@@ -44,7 +37,7 @@ class HomeController extends Controller
     }
 
     /**
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
     public function howWorks()
     {
@@ -52,7 +45,7 @@ class HomeController extends Controller
     }
 
     /**
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
     public function aboutUs()
     {
@@ -60,19 +53,11 @@ class HomeController extends Controller
     }
 
     /**
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
     public function suporte()
     {
         return view('web.home.suporte');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-
     }
 
     /**
@@ -81,7 +66,7 @@ class HomeController extends Controller
     public function showGameByCategory(string $slug)
     {
         $category = Category::where('slug', $slug)->first();
-        if(!empty($category)) {
+        if ($category !== null) {
             $games = Game::where('category_id', $category->id)->whereActive(1)->paginate();
 
             return view('web.categories.index', compact(['games', 'category']));
@@ -90,27 +75,4 @@ class HomeController extends Controller
         return back();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

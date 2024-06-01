@@ -16,14 +16,14 @@ class WalletOverview extends BaseWidget
     public $startDate;
     public $endDate;
 
-    public function mount()
+    public function mount(): void
     {
         $this->startDate = Carbon::now()->startOfMonth()->toDateString();
         $this->endDate = Carbon::now()->endOfMonth()->toDateString();
     }
 
     #[On('filter-dates')]
-    public function updateFilterDates($startDate, $endDate)
+    public function updateFilterDates($startDate, $endDate): void
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
@@ -47,8 +47,8 @@ class WalletOverview extends BaseWidget
         $total_users = User::where('role_id', 3)->count();
 
         return [
-            Stat::make('Depositos', \Helper::amountFormatDecimal($sumDepositMonth))
-                ->description('Total de Depositos')
+            Stat::make('Depósitos', \Helper::amountFormatDecimal($sumDepositMonth))
+                ->description('Total de Depósitos')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success'),
             Stat::make('Saques', \Helper::amountFormatDecimal($sumWithdrawalMonth))

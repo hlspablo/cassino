@@ -9,7 +9,7 @@ use Filament\Support\RawJs;
 
 class OrderChart extends ChartWidget
 {
-    protected static ?string $heading = 'Apostas';
+    protected static ?string $heading = 'Apostas (Normal + Bônus)';
 
     protected static ?int $sort = 3;
 
@@ -68,8 +68,9 @@ class OrderChart extends ChartWidget
         collect(range(1, 12))->each(function ($month) use ($now, &$orderPerMonth, &$months) {
             $monthDate = Carbon::parse($now)->month($month);
             $sum = Order::whereMonth('created_at', $monthDate)->sum('bet');
+            $sum_bonus = Order::whereMonth('created_at', $monthDate)->sum('bonus_bet');
 
-            $orderPerMonth[] = $sum;
+            $orderPerMonth[] = $sum + $sum_bonus;
             $months[] = $monthDate->format('M');
         });
 

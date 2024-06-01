@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
-use App\Models\GameExclusive;
 // use App\Traits\Providers\SlotegratorTrait;
+use Exception;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
@@ -14,40 +14,17 @@ class GameController extends Controller
 
     /**
      * Display a listing of the resource.
-     * @throws \Exception
+     * @throws Exception
      */
     public function index(Request $request, $slug)
     {
         $game = Game::where('slug', $slug)->first();
-        if(!empty($game)) {
-            if(auth()->check()) {
-
-                $token = '';
-                $time = time() - 34;
-
-                if(auth()->user()->banned) {
+        if ($game !== null) {
+            if (auth()->check()) {
+                if (auth()->user()->banned) {
                     return redirect()->to('/banned');
                 }
-
-                $token = hash('sha256', 'md5 cassino'.md5(auth()->user()->email.'-'.time()));
-                \DB::table('users')->where('email', auth()->user()->email)->update(array('token_time' => $time,'token' => $token,'logged_in' => 0));
-
-                $gameProvider = null;
-
-                // if($game->provider_service == 'slotegrator') {
-                //     $gameProvider = $this->startGameSlotegrator($game->uuid);
-                // }
-
-                if(!empty($gameProvider) && $gameProvider['status']) {
-                    $game->increment('views', 1);
-
-                    return view('web.game.index', [
-                        'game' => $game,
-                        'gameUrl' => $gameProvider['game_url'],
-                    ]);
-                } else {
-                    return back()->with($gameProvider);
-                }
+                // start Game
             } else {
                 return redirect()->to('/?action=login');
             }
@@ -57,104 +34,32 @@ class GameController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function getListGame(Request $request)
     {
-        switch ($request->tab) {
-            case 'exclusives':
-                $games = $this->listExclusives($request);
-                break;
-            default:
-                $games = $this->listProvider($request);
-                break;
-        }
-
-
+        $games = $this->listProvider($request);
         $search = $request->searchTerm ?? '';
         $tab = $request->tab;
 
         return view('web.game.list', compact(['games', 'search', 'tab']));
     }
 
-    /**
-     * @param $request
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
-    private function listExclusives($request)
-    {
-        $query_games = GameExclusive::query();
-        $query_games->whereActive(1);
 
-        if(isset($request->searchTerm) && !empty($request->searchTerm) && strlen($request->searchTerm) > 3) {
-            $query_games->whereLike(['name', 'uuid'], $request->searchTerm);
-        }
-
-        return $query_games->paginate();
-    }
-
-    /**
-     * @param $request
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
     private function listProvider($request)
     {
-        $query_games = Game::query();
-        $query_games->whereActive(1);
+        $query_games = Game::query()->whereActive(1);
 
-        if(isset($request->tab)) {
-            switch ($request->tab) {
-                case 'popular':
-                    $query_games->orderBy('views', 'desc');
-                    break;
-            }
-
+        if (isset($request->tab) && $request->tab === 'popular') {
+            $query_games->orderBy('views', 'desc');
         }
 
-        if(isset($request->searchTerm) && !empty($request->searchTerm) && strlen($request->searchTerm) > 3) {
-            $query_games->whereLike(['name', 'provider', 'provider_service'], $request->searchTerm);
+        if (!empty($request->searchTerm) && strlen($request->searchTerm) > 3) {
+            $query_games::whereLike(['name', 'provider'], $request->searchTerm);
+            // ->whereLike before
         }
 
         return $query_games->paginate();
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

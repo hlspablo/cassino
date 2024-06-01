@@ -49,11 +49,12 @@
     </head>
 
     <body>
-        @if(!in_array(request()->route()->getName(), ['web.vgames.show']) && !empty(config('setting')->promo_text))
-            <div class="banner-top">
-                <p>{{ config('setting')->promo_text }}</p>
-            </div>
-        @endif
+{{--        @if(!empty(config('setting')->promo_text))--}}
+{{--            <div class="banner-top">--}}
+{{--                <p>{{ config('setting')->promo_text }}</p>--}}
+{{--            </div>--}}
+{{--        @endif--}}
+{{--TODO: MAKE THIS ONLY APPEAR AND DISSAPERS--}}
 
         <main class="page">
             @yield('content')

@@ -7,8 +7,6 @@ use App\Filament\Pages\Settings;
 use App\Filament\Pages\SuitPayPaymentPage;
 use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\DepositResource;
-use App\Filament\Resources\GameExclusiveResource;
-use App\Filament\Resources\KscinusGamesResource;
 use App\Filament\Resources\GameResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\UserResource;
@@ -17,6 +15,7 @@ use App\Filament\Resources\WithdrawalResource;
 use App\Livewire\AdminWidgets;
 use App\Livewire\LatestAdminComissions;
 use App\Filament\Widgets\PeriodFilterWidget;
+use Exception;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -41,6 +40,7 @@ class AdminPanelProvider extends PanelProvider
     /**
      * @param Panel $panel
      * @return Panel
+     * @throws Exception
      */
     public function panel(Panel $panel): Panel
     {
@@ -111,8 +111,6 @@ class AdminPanelProvider extends PanelProvider
                     auth()->user()->hasRole('admin') ?
                         NavigationGroup::make('Meus Jogos')
                             ->items([
-                                ...GameExclusiveResource::getNavigationItems(),
-                                ...KscinusGamesResource::getNavigationItems(),
                                 ...CategoryResource::getNavigationItems(),
                                 ...GameResource::getNavigationItems(),
                             ])
