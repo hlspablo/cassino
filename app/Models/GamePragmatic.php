@@ -5,6 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\GamePragmatic
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|GamePragmatic newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|GamePragmatic newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|GamePragmatic query()
+ * @mixin \Eloquent
+ */
 class GamePragmatic extends Model
 {
     use HasFactory;

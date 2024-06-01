@@ -5,6 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\GameLog
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|GameLog newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|GameLog newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|GameLog query()
+ * @mixin \Eloquent
+ */
 class GameLog extends Model
 {
     use HasFactory;

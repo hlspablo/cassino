@@ -36,9 +36,12 @@ class AppServiceProvider extends ServiceProvider
                             $buffer = explode('.', $attribute);
                             $attributeField = array_pop($buffer);
                             $relationPath = implode('.', $buffer);
-                            $query->orWhereHas($relationPath, function (Builder $query) use ($attributeField, $searchTerm) {
-                                $query->where($attributeField, 'LIKE', "%{$searchTerm}%");
-                            });
+                            $query->orWhereHas(
+                                $relationPath,
+                                function (Builder $query) use ($attributeField, $searchTerm) {
+                                    $query->where($attributeField, 'LIKE', "%{$searchTerm}%");
+                                }
+                            );
                         },
                         function (Builder $query) use ($attribute, $searchTerm) {
                             $query->orWhere($attribute, 'LIKE', "%{$searchTerm}%");
@@ -48,6 +51,5 @@ class AppServiceProvider extends ServiceProvider
             });
             return $this;
         });
-
     }
 }

@@ -2,56 +2,64 @@
     use Filament\Support\Enums\IconSize;
 ?>
 
-<?php $attributes ??= new \Illuminate\View\ComponentAttributeBag; ?>
-<?php foreach($attributes->onlyProps([
+<?php $attributes ??= new \Illuminate\View\ComponentAttributeBag;
+
+$__newAttributes = [];
+$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames(([
     'color' => 'gray',
     'icon' => null,
     'iconSize' => IconSize::Medium,
     'tag' => 'div',
-]) as $__key => $__value) {
-    $$__key = $$__key ?? $__value;
-} ?>
-<?php $attributes = $attributes->exceptProps([
-    'color' => 'gray',
-    'icon' => null,
-    'iconSize' => IconSize::Medium,
-    'tag' => 'div',
-]); ?>
-<?php foreach (array_filter(([
+]));
+
+foreach ($attributes->all() as $__key => $__value) {
+    if (in_array($__key, $__propNames)) {
+        $$__key = $$__key ?? $__value;
+    } else {
+        $__newAttributes[$__key] = $__value;
+    }
+}
+
+$attributes = new \Illuminate\View\ComponentAttributeBag($__newAttributes);
+
+unset($__propNames);
+unset($__newAttributes);
+
+foreach (array_filter(([
     'color' => 'gray',
     'icon' => null,
     'iconSize' => IconSize::Medium,
     'tag' => 'div',
 ]), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
     $$__key = $$__key ?? $__value;
-} ?>
-<?php $__defined_vars = get_defined_vars(); ?>
-<?php foreach ($attributes as $__key => $__value) {
+}
+
+$__defined_vars = get_defined_vars();
+
+foreach ($attributes->all() as $__key => $__value) {
     if (array_key_exists($__key, $__defined_vars)) unset($$__key);
-} ?>
-<?php unset($__defined_vars); ?>
+}
+
+unset($__defined_vars); ?>
 
 <<?php echo e($tag); ?>
 
     <?php echo e($attributes
             ->class([
                 'fi-dropdown-header flex w-full gap-2 p-3 text-sm',
+                match ($color) {
+                    'gray' => null,
+                    default => 'fi-color-custom',
+                },
+                // @deprecated `fi-dropdown-header-color-*` has been replaced by `fi-color-*` and `fi-color-custom`.
                 is_string($color) ? "fi-dropdown-header-color-{$color}" : null,
-            ])
-            ->style([
-                \Filament\Support\get_color_css_variables(
-                    $color,
-                    shades: [
-                        400,
-                        ...(filled($icon) ? [500] : []),
-                        600,
-                    ],
-                ) => $color !== 'gray',
+                is_string($color) ? "fi-color-{$color}" : null,
             ])); ?>
 
 >
     <?php if(filled($icon)): ?>
-        <?php if (isset($component)) { $__componentOriginal71c6471fa76ce19017edc287b6f4508c = $component; } ?>
+        <?php if (isset($component)) { $__componentOriginalbfc641e0710ce04e5fe02876ffc6f950 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalbfc641e0710ce04e5fe02876ffc6f950 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'filament::components.icon','data' => ['icon' => $icon,'class' => \Illuminate\Support\Arr::toCssClasses([
                 'fi-dropdown-header-icon',
                 match ($iconSize) {
@@ -64,12 +72,18 @@
                     'gray' => 'text-gray-400 dark:text-gray-500',
                     default => 'text-custom-500 dark:text-custom-400',
                 },
-            ])]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+            ]),'style' => \Illuminate\Support\Arr::toCssStyles([
+                \Filament\Support\get_color_css_variables(
+                    $color,
+                    shades: [400, 500],
+                    alias: 'dropdown.header.icon',
+                ) => $color !== 'gray',
+            ])]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('filament::icon'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
-<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['icon' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($icon),'class' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(\Illuminate\Support\Arr::toCssClasses([
                 'fi-dropdown-header-icon',
@@ -83,12 +97,22 @@
                     'gray' => 'text-gray-400 dark:text-gray-500',
                     default => 'text-custom-500 dark:text-custom-400',
                 },
+            ])),'style' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(\Illuminate\Support\Arr::toCssStyles([
+                \Filament\Support\get_color_css_variables(
+                    $color,
+                    shades: [400, 500],
+                    alias: 'dropdown.header.icon',
+                ) => $color !== 'gray',
             ]))]); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
-<?php if (isset($__componentOriginal71c6471fa76ce19017edc287b6f4508c)): ?>
-<?php $component = $__componentOriginal71c6471fa76ce19017edc287b6f4508c; ?>
-<?php unset($__componentOriginal71c6471fa76ce19017edc287b6f4508c); ?>
+<?php if (isset($__attributesOriginalbfc641e0710ce04e5fe02876ffc6f950)): ?>
+<?php $attributes = $__attributesOriginalbfc641e0710ce04e5fe02876ffc6f950; ?>
+<?php unset($__attributesOriginalbfc641e0710ce04e5fe02876ffc6f950); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalbfc641e0710ce04e5fe02876ffc6f950)): ?>
+<?php $component = $__componentOriginalbfc641e0710ce04e5fe02876ffc6f950; ?>
+<?php unset($__componentOriginalbfc641e0710ce04e5fe02876ffc6f950); ?>
 <?php endif; ?>
     <?php endif; ?>
 
@@ -100,6 +124,13 @@
                 default => 'text-custom-600 dark:text-custom-400',
             },
         ]); ?>"
+        style="<?php echo \Illuminate\Support\Arr::toCssStyles([
+            \Filament\Support\get_color_css_variables(
+                $color,
+                shades: [400, 600],
+                alias: 'dropdown.header.label',
+            ) => $color !== 'gray',
+        ]) ?>"
     >
         <?php echo e($slot); ?>
 

@@ -8,6 +8,42 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * App\Models\AffiliateHistory
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property int $inviter
+ * @property string $commission
+ * @property string|null $commission_type
+ * @property int|null $deposited
+ * @property string|null $deposited_amount
+ * @property int|null $losses
+ * @property string|null $losses_amount
+ * @property string|null $commission_paid
+ * @property int $status
+ * @property mixed $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $date_human_readable
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereCommission($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereCommissionPaid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereCommissionType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereDeposited($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereDepositedAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereInviter($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereLosses($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereLossesAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AffiliateHistory whereUserId($value)
+ * @mixin \Eloquent
+ */
 class AffiliateHistory extends Model
 {
     use HasFactory;

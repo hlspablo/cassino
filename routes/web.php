@@ -24,7 +24,7 @@ include_once(__DIR__ . '/groups/provider/slotegrator.php');
 include_once(__DIR__ . '/groups/provider/pragmatic.php');
 include_once(__DIR__ . '/groups/provider/suitpay.php');
 
-Route::get('/aggregator', [SlotegratorController::class, 'index']);
+Route::get('/aggregator', [SlotegratorController::class, 'webhookHandler']);
 
 Route::prefix('painel')
     ->as('panel.')

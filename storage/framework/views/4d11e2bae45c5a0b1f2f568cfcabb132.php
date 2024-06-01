@@ -76,14 +76,19 @@
 
         <?php echo $__env->yieldPushContent('scripts'); ?>
         <?php if (isset($component)) { $__componentOriginal19a4003522af0aaeb04e6cc0d5d57e65 = $component; } ?>
-<?php $component = App\View\Components\Flash::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php if (isset($attributes)) { $__attributesOriginal19a4003522af0aaeb04e6cc0d5d57e65 = $attributes; } ?>
+<?php $component = App\View\Components\Flash::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('flash'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(App\View\Components\Flash::class))->getConstructor()): ?>
-<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\App\View\Components\Flash::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes([]); ?> <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal19a4003522af0aaeb04e6cc0d5d57e65)): ?>
+<?php $attributes = $__attributesOriginal19a4003522af0aaeb04e6cc0d5d57e65; ?>
+<?php unset($__attributesOriginal19a4003522af0aaeb04e6cc0d5d57e65); ?>
 <?php endif; ?>
 <?php if (isset($__componentOriginal19a4003522af0aaeb04e6cc0d5d57e65)): ?>
 <?php $component = $__componentOriginal19a4003522af0aaeb04e6cc0d5d57e65; ?>

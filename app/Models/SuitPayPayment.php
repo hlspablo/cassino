@@ -8,6 +8,38 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * App\Models\SuitPayPayment
+ *
+ * @property int $id
+ * @property string|null $payment_id
+ * @property int|null $user_id
+ * @property int|null $withdrawal_id
+ * @property string|null $pix_key
+ * @property string|null $pix_type
+ * @property string $amount
+ * @property string|null $observation
+ * @property int|null $status
+ * @property mixed $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $date_human_readable
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment query()
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment whereAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment whereObservation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment wherePaymentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment wherePixKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment wherePixType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SuitPayPayment whereWithdrawalId($value)
+ * @mixin \Eloquent
+ */
 class SuitPayPayment extends Model
 {
     use HasFactory;

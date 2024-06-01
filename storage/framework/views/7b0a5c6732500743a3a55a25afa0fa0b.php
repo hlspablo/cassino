@@ -1,39 +1,52 @@
-<?php $attributes ??= new \Illuminate\View\ComponentAttributeBag; ?>
-<?php foreach($attributes->onlyProps([
+<?php $attributes ??= new \Illuminate\View\ComponentAttributeBag;
+
+$__newAttributes = [];
+$__propNames = \Illuminate\View\ComponentAttributeBag::extractPropNames(([
+    'circular' => true,
     'size' => 'md',
-    'src',
-]) as $__key => $__value) {
-    $$__key = $$__key ?? $__value;
-} ?>
-<?php $attributes = $attributes->exceptProps([
+]));
+
+foreach ($attributes->all() as $__key => $__value) {
+    if (in_array($__key, $__propNames)) {
+        $$__key = $$__key ?? $__value;
+    } else {
+        $__newAttributes[$__key] = $__value;
+    }
+}
+
+$attributes = new \Illuminate\View\ComponentAttributeBag($__newAttributes);
+
+unset($__propNames);
+unset($__newAttributes);
+
+foreach (array_filter(([
+    'circular' => true,
     'size' => 'md',
-    'src',
-]); ?>
-<?php foreach (array_filter(([
-    'size' => 'md',
-    'src',
 ]), 'is_string', ARRAY_FILTER_USE_KEY) as $__key => $__value) {
     $$__key = $$__key ?? $__value;
-} ?>
-<?php $__defined_vars = get_defined_vars(); ?>
-<?php foreach ($attributes as $__key => $__value) {
-    if (array_key_exists($__key, $__defined_vars)) unset($$__key);
-} ?>
-<?php unset($__defined_vars); ?>
+}
 
-<div
+$__defined_vars = get_defined_vars();
+
+foreach ($attributes->all() as $__key => $__value) {
+    if (array_key_exists($__key, $__defined_vars)) unset($$__key);
+}
+
+unset($__defined_vars); ?>
+
+<img
     <?php echo e($attributes
             ->class([
-                'fi-avatar bg-cover bg-center',
+                'fi-avatar object-cover object-center',
+                'rounded-md' => ! $circular,
+                'fi-circular rounded-full' => $circular,
                 match ($size) {
-                    'md' => 'h-9 w-9',
+                    'sm' => 'h-6 w-6',
+                    'md' => 'h-8 w-8',
                     'lg' => 'h-10 w-10',
                     default => $size,
                 },
-            ])
-            ->style([
-                "background-image: url('{$src}')",
             ])); ?>
 
-></div>
+/>
 <?php /**PATH /Users/hlspablo/code/cassino/vendor/filament/support/src/../resources/views/components/avatar.blade.php ENDPATH**/ ?>
