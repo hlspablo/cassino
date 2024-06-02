@@ -38,17 +38,18 @@ RUN chmod -R 755 /var/www/storage \
 
 # Copy Nginx configuration file
 COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./docker/nginx/default.conf /etc/nginx/nginx.conf
 
 # Setup Supervisor to manage services
 RUN mkdir -p /etc/supervisor/conf.d
 COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Download and configure Cloud SQL Proxy
-RUN curl -o /cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 \
-    && chmod +x /cloud_sql_proxy
+# RUN curl -o /cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 \
+#     && chmod +x /cloud_sql_proxy
 
 # Expose ports
-EXPOSE 80 9000
+EXPOSE 80
 
 # Start all services
 CMD ["/usr/bin/supervisord"]
