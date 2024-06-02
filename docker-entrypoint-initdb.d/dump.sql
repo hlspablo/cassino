@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Jun 02, 2024 at 03:21 PM
+-- Generation Time: Jun 02, 2024 at 08:29 PM
 -- Server version: 8.4.0
 -- PHP Version: 8.2.8
 
@@ -17,12 +17,12 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
--- Add the database creation and user creation steps at the beginning
-GRANT ALL PRIVILEGES ON cassinobles.* TO 'cassinohub'@'%';
-FLUSH PRIVILEGES;
+--
+-- Database: `mydb`
+--
 
--- Switch to the 'laravel' database
-USE cassinobles;
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `affiliate_histories`
 --
@@ -41,7 +41,7 @@ CREATE TABLE `affiliate_histories` (
   `status` tinyint NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `affiliate_histories`
@@ -65,7 +65,7 @@ CREATE TABLE `categories` (
   `slug` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `categories`
@@ -111,7 +111,7 @@ CREATE TABLE `deposits` (
   `status` tinyint NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `deposits`
@@ -163,7 +163,7 @@ CREATE TABLE `games` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL,
   `freespin_valid_until_full_day` int NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `games`
@@ -9907,7 +9907,7 @@ CREATE TABLE `migrations` (
   `id` int UNSIGNED NOT NULL,
   `migration` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `migrations`
@@ -9963,7 +9963,7 @@ CREATE TABLE `notifications` (
   `read_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- --------------------------------------------------------
 
@@ -9987,7 +9987,7 @@ CREATE TABLE `orders` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `bonus_bet` decimal(10,2) NOT NULL DEFAULT '0.00'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- --------------------------------------------------------
 
@@ -9999,7 +9999,7 @@ CREATE TABLE `password_reset_tokens` (
   `email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `token` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- --------------------------------------------------------
 
@@ -10202,7 +10202,7 @@ CREATE TABLE `settings` (
   `promo_link` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `min_rollover` decimal(10,2) NOT NULL DEFAULT '0.00',
   `game_level` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `settings`
@@ -10229,7 +10229,7 @@ CREATE TABLE `suit_pay_payments` (
   `status` tinyint DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `suit_pay_payments`
@@ -10253,23 +10253,6 @@ INSERT INTO `suit_pay_payments` (`id`, `payment_id`, `user_id`, `withdrawal_id`,
 -- --------------------------------------------------------
 
 --
--- Table structure for table `system_wallets`
---
-
-CREATE TABLE `system_wallets` (
-  `id` bigint UNSIGNED NOT NULL,
-  `label` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `balance` decimal(27,12) NOT NULL DEFAULT '0.000000000000',
-  `balance_min` decimal(27,12) NOT NULL DEFAULT '10000.100000000000',
-  `pay_upto_percentage` decimal(4,2) NOT NULL DEFAULT '45.00',
-  `mode` enum('balance_min','percentage') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'percentage',
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=FIXED;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `transactions`
 --
 
@@ -10284,7 +10267,7 @@ CREATE TABLE `transactions` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `sec_token` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `transactions`
@@ -10330,7 +10313,7 @@ CREATE TABLE `users` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `kscinus` tinyint(1) DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `users`
@@ -10338,8 +10321,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `role_id`, `name`, `is_admin`, `last_name`, `cpf`, `phone`, `email`, `email_verified_at`, `password`, `remember_token`, `token_time`, `token`, `logged_in`, `banned`, `inviter`, `affiliate_revenue_share`, `affiliate_cpa`, `affiliate_baseline`, `is_demo_agent`, `oauth_id`, `oauth_type`, `status`, `created_at`, `updated_at`, `kscinus`) VALUES
 (1, 0, 'Admin', 1, NULL, '100.200.300-90', '(66) 98888-4444', 'admin@admin.com', NULL, '$2y$10$IMdQEidqFuHD0vBqLRIZxOIghWzoWga0uhmLLTXEYsXaq5cl6uN1m', 'CKDR7vsGM6Up2RPrkGLLKcqVr9dWOT2Bm1fmj3BGUbKoUyz9djPxBM6pDIWG', 1717265590, '1d341432808c7f63d7b982db5a13627af8ffc4dfd45858b9d9b5977b75f0d8e3', 0, 0, 10, 20.00, 20.00, 0.00, 0, NULL, NULL, 'active', '2023-09-24 21:13:49', '2024-05-14 07:39:48', 1),
-(342, 3, 'frango', 0, NULL, NULL, '(86) 99454-7968', 'frango@gmail.com', NULL, '$2y$10$LNmjHaPDERs/wvyc7J3KPOLeAvWli.Jat9a5dLtbDXfldq/yUKze6', 'SmPhZEgZPBg3Bz8FmeCyzQOpJfmGSreLlQkNgn4b1hOtfheO6A2WHFrNdJpg', NULL, NULL, 0, 0, 341, 0.00, 0.00, 0.00, 0, NULL, NULL, 'active', '2024-05-21 09:13:08', '2024-05-22 08:51:10', 0),
-(341, 3, 'hlspablo', 0, NULL, NULL, '(86) 99454-7968', 'pabllobeg@gmail.com', NULL, '$2y$10$snGdilDgafF.N9BofxRb5.cFXg9CT.2aPy4AAomkPLliDjHIjlVMq', 'udaz36GDSWRPax2tZHfXfCzSTn9i1REWj5iJKTlhVgSv1VhFTNzSYosv3rMb', NULL, NULL, 0, 0, NULL, 5.00, 1.00, 0.00, 0, NULL, NULL, 'active', '2024-05-20 19:13:14', '2024-05-22 08:41:20', 0);
+(341, 3, 'hlspablo', 0, NULL, NULL, '(86) 99454-7968', 'pabllobeg@gmail.com', NULL, '$2y$10$snGdilDgafF.N9BofxRb5.cFXg9CT.2aPy4AAomkPLliDjHIjlVMq', 'udaz36GDSWRPax2tZHfXfCzSTn9i1REWj5iJKTlhVgSv1VhFTNzSYosv3rMb', NULL, NULL, 0, 0, NULL, 5.00, 1.00, 0.00, 0, NULL, NULL, 'active', '2024-05-20 19:13:14', '2024-05-22 08:41:20', 0),
+(342, 3, 'frango', 0, NULL, NULL, '(86) 99454-7968', 'frango@gmail.com', NULL, '$2y$10$LNmjHaPDERs/wvyc7J3KPOLeAvWli.Jat9a5dLtbDXfldq/yUKze6', 'SmPhZEgZPBg3Bz8FmeCyzQOpJfmGSreLlQkNgn4b1hOtfheO6A2WHFrNdJpg', NULL, NULL, 0, 0, 341, 0.00, 0.00, 0.00, 0, NULL, NULL, 'active', '2024-05-21 09:13:08', '2024-05-22 08:51:10', 0);
 
 -- --------------------------------------------------------
 
@@ -10362,7 +10345,7 @@ CREATE TABLE `wallets` (
   `refer_rewards` decimal(20,2) DEFAULT '0.00',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=FIXED;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `wallets`
@@ -10390,7 +10373,7 @@ CREATE TABLE `withdrawals` (
   `tipo_chave` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `withdrawals`
@@ -10527,12 +10510,6 @@ ALTER TABLE `suit_pay_payments`
   ADD KEY `suit_pay_payments_user_id_foreign` (`user_id`) USING BTREE;
 
 --
--- Indexes for table `system_wallets`
---
-ALTER TABLE `system_wallets`
-  ADD PRIMARY KEY (`id`) USING BTREE;
-
---
 -- Indexes for table `transactions`
 --
 ALTER TABLE `transactions`
@@ -10550,8 +10527,8 @@ ALTER TABLE `users`
 -- Indexes for table `wallets`
 --
 ALTER TABLE `wallets`
-  ADD PRIMARY KEY (`id`) USING BTREE,
-  ADD KEY `wallets_user_id_foreign` (`user_id`) USING BTREE;
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `withdrawals`
@@ -10635,12 +10612,6 @@ ALTER TABLE `settings`
 --
 ALTER TABLE `suit_pay_payments`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
-
---
--- AUTO_INCREMENT for table `system_wallets`
---
-ALTER TABLE `system_wallets`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `transactions`
