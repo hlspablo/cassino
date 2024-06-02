@@ -146,7 +146,7 @@ trait SlotegratorTrait
      * @throws Exception
      * @throws GuzzleException
      */
-    public function startGameSlotegrator(string $gameUuid): array
+    public function startGameSlotegrator(string $gameUuid): string | null
     {
 
         if (auth()->check()) {
@@ -168,7 +168,7 @@ trait SlotegratorTrait
                 if ($lobby_data) {
                     $requestParams['lobby_data'] = $lobby_data['lobbyData'];
                 } else {
-                    // return rooms opened to play
+                    return null;
                 }
             }
 
@@ -179,7 +179,7 @@ trait SlotegratorTrait
 
 
             $data = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
-            return $data;
+            return $data['url'];
         }
     }
 

@@ -4,19 +4,21 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
-// use App\Traits\Providers\SlotegratorTrait;
+use App\Traits\Providers\SlotegratorTrait;
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    // use SlotegratorTrait;
+    use SlotegratorTrait;
+
 
     /**
-     * Display a listing of the resource.
-     * @throws Exception
+     * @throws GuzzleException
      */
-    public function index(Request $request, $slug)
+    public function index(Request $request, $slug): RedirectResponse
     {
         $game = Game::where('slug', $slug)->first();
         if ($game !== null) {
@@ -24,18 +26,17 @@ class GameController extends Controller
                 if (auth()->user()->banned) {
                     return redirect()->to('/banned');
                 }
-                // start Game
-            } else {
-                return redirect()->to('/?action=login');
+                $gameUrl = $this->startGameSlotegrator($game->uuid);
+                return redirect()->to($gameUrl);
             }
+
+            return redirect()->to('/?action=login');
         }
 
         return back()->with('error', 'Você precisa fazer login para jogar');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function getListGame(Request $request)
     {
         $games = $this->listProvider($request);
@@ -55,7 +56,7 @@ class GameController extends Controller
         }
 
         if (!empty($request->searchTerm) && strlen($request->searchTerm) > 3) {
-            $query_games::whereLike(['name', 'provider'], $request->searchTerm);
+            $query_games->whereLike(['name', 'provider'], $request->searchTerm);
             // ->whereLike before
         }
 
