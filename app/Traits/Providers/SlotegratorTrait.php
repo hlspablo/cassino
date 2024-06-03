@@ -146,14 +146,11 @@ trait SlotegratorTrait
      * @throws Exception
      * @throws GuzzleException
      */
-    public function startGameSlotegrator(string $gameUuid): string | null
+    public function startGameSlotegrator(?Game $game): string | null
     {
-
-        if (auth()->check()) {
-            $game = Game::find($gameUuid);
-
+        if ($game !== null && auth()->check()) {
             $requestParams = [
-                'game_uuid' => $gameUuid,
+                'game_uuid' => $game->uuid,
                 'player_id' => auth()->user()->id,
                 'player_name' => auth()->user()->name,
                 'email' => auth()->user()->email,
@@ -164,7 +161,7 @@ trait SlotegratorTrait
             ];
 
             if ($game->has_lobby) {
-                $lobby_data = $this->getLobbyData($gameUuid);
+                $lobby_data = $this->getLobbyData($game->uuid);
                 if ($lobby_data) {
                     $requestParams['lobby_data'] = $lobby_data['lobbyData'];
                 } else {

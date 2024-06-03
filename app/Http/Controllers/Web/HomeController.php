@@ -67,7 +67,7 @@ class HomeController extends Controller
     {
         $category = Category::where('slug', $slug)->first();
         if ($category !== null) {
-            $games = Game::where('category_id', $category->id)->whereActive(1)->paginate();
+            $games = Game::where('category_id', $category->id)->whereActive(1)->paginate(30);
 
             return view('web.categories.index', compact(['games', 'category']));
         }

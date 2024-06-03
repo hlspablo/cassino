@@ -31,10 +31,22 @@
 
                 </div>
             </div>
+            <div class="row">
+                @if($games->count() > 0)
+                    @foreach($games as $game)
+                        <div class="col-xl-2 col-lg-2 col-md-3 col-6 caixa-loop-elementos">
+                            <a href="{{ route('web.game.index', ['slug' => $game->slug]) }}" class="inner-loop-elementos">
+                                <img src="{{ asset('storage/'.$game->image) }}" alt="{{ $game->name }}" class="img-fluid rounded-3">
+                            </a>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
             <div class="">
                 <div class="col-lg-6"></div>
                 <div class="col-lg-6">
-                    {{ $games->links() }}
+{{--                    {{ $games->links() }}--}}
+                    {{ $games->appends(request()->except('page'))->links() }}
                 </div>
             </div>
         </div>

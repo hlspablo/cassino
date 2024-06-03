@@ -9,6 +9,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Laravel\Octane\Exceptions\DdException;
 
 class GameController extends Controller
 {
@@ -17,8 +18,9 @@ class GameController extends Controller
 
     /**
      * @throws GuzzleException
+     * @throws DdException
      */
-    public function index(Request $request, $slug): RedirectResponse
+    public function index(Request $request, $slug)
     {
         $game = Game::where('slug', $slug)->first();
         if ($game !== null) {
@@ -26,8 +28,13 @@ class GameController extends Controller
                 if (auth()->user()->banned) {
                     return redirect()->to('/banned');
                 }
-                $gameUrl = $this->startGameSlotegrator($game->uuid);
-                return redirect()->to($gameUrl);
+                //dd($game->has_lobby);
+                $gameUrl = $this->startGameSlotegrator($game);
+                if ($gameUrl !== null) {
+                    //return redirect()->to($gameUrl);
+                    return view('web.game.index', ['gameUrl' => $gameUrl]);
+                }
+                return redirect()->to(url()->current());
             }
 
             return redirect()->to('/?action=login');
@@ -40,6 +47,7 @@ class GameController extends Controller
     public function getListGame(Request $request)
     {
         $games = $this->listProvider($request);
+
         $search = $request->searchTerm ?? '';
         $tab = $request->tab;
 
@@ -57,10 +65,8 @@ class GameController extends Controller
 
         if (!empty($request->searchTerm) && strlen($request->searchTerm) > 3) {
             $query_games->whereLike(['name', 'provider'], $request->searchTerm);
-            // ->whereLike before
         }
 
-        return $query_games->paginate();
+        return $query_games->paginate(30);
     }
-
 }
