@@ -40,4 +40,4 @@ Route::middleware(['web'])
         include_once(__DIR__ . '/groups/web/category.php');
     });
 
-URL::forceScheme('http');
+#URL::forceScheme('http');
