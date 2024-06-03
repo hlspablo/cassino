@@ -5,6 +5,8 @@ ENV SERVER_NAME=cassinobles.com
 # If you want to disable HTTPS, use this value instead:
 #ENV SERVER_NAME=:80
 
+ENV FRANKENPHP_CONFIG="worker ./public/index.php"
+
 # Enable PHP production settings
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
