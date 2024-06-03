@@ -166,4 +166,16 @@ class Setting extends Model
     ];
 
     protected $hidden = array('created_at', 'updated_at');
+
+    public static function __set_state($properties)
+    {
+        $instance = new self();
+
+        foreach ($properties as $property => $value) {
+            $instance->$property = $value;
+        }
+
+        return $instance;
+    }
+
 }

@@ -8,4 +8,4 @@ VARS=$(grep -v '^#' $ENV_FILE | xargs -I {} echo -n '{}',)
 VARS=${VARS%,}
 
 # Update Cloud Run service with environment variables
-gcloud run services update cassino --set-env-vars "$VARS"
+gcloud run services update cassinobles --set-env-vars "$VARS"
