@@ -18,17 +18,28 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs
 
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
 # Set the working directory
 WORKDIR /app
 
 # Copy the entire project except items in .dockerignore
 COPY . .
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+# Run Artisan commands
+RUN php artisan package:discover --ansi \
+    && php artisan filament:upgrade \
+    && php artisan vendor:publish --tag=laravel-assets --ansi --force
+
+# post-autoload-dump
+#php artisan package:discover --ansi \
+# && php artisan filament:upgrade \
+# post-update-cmd
+# php artisan vendor:publish --tag=laravel-assets --ansi --force
 
 # Install Node.js dependencies
 RUN npm install
