@@ -11,19 +11,27 @@ RUN install-php-extensions \
     bcmath \
     sockets
 
-# Be sure to replace "your-domain-name.example.com" by your domain name
-# ENV SERVER_NAME=your-domain-name.example.com
-# If you want to disable HTTPS, use this value instead:
-# ENV SERVER_NAME=:80
-
 # Enable PHP production settings
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+# Install Node.js and npm (latest LTS version)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the entire project
-COPY . /app
+# Copy the entire project except items in .dockerignore
+COPY . .
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+# Install Node.js dependencies
+RUN npm install
 
 # Ensure storage and cache directories are writable
 RUN chown -R www-data:www-data storage bootstrap/cache
