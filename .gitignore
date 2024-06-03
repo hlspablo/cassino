@@ -17,15 +17,6 @@ yarn-error.log
 /.idea
 /.vscode
 .DS_Store
-/storage/*
-/storage/*.key
-!/storage/app
-!/storage/app/public
-!/storage/framework/cache
-!/storage/framework/sessions
-!/storage/framework/testing
-!/storage/framework/views
-!/storage/logs
 
 /caddy
 frankenphp

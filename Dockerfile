@@ -27,6 +27,9 @@ WORKDIR /app
 # Copy the entire project except items in .dockerignore
 COPY . .
 
+# Ensure storage and cache directories are writable
+RUN chown -R www-data:www-data storage bootstrap/cache
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
@@ -43,9 +46,6 @@ RUN php artisan package:discover --ansi \
 
 # Install Node.js dependencies
 RUN npm install
-
-# Ensure storage and cache directories are writable
-RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Expose the default port for HTTP traffic
 EXPOSE 8000
